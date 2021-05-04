@@ -143,12 +143,8 @@ L1_params = solve_parameters_decay(L1_1820, xi = 0.00325)
 L1_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
                                       'Away win', '1X', 'X2', '12', 'BTTS', 'No BTTS'])
 
-HomeTeam = ['Accrington', 'AFC Wimbledon', 'Bristol Rvs', 'Burton', 'Fleetwood Town',
-            'Hull', 'Northampton', 'Peterboro', 'Plymouth',
-            'Rochdale', 'Shrewsbury', 'Swindon']
-AwayTeam = ['Charlton', 'Portsmouth', 'Crewe', 'Gillingham', 
-            'Milton Keynes Dons', 'Wigan', 'Blackpool', 'Lincoln',
-            'Sunderland', 'Doncaster', 'Oxford', 'Ipswich']
+HomeTeam = ['Blackpool', 'Charlton', 'Shrewsbury']
+AwayTeam = ['Doncaster', 'Lincoln', 'Ipswich']
 
 for i, j in zip(HomeTeam, AwayTeam):
     matrix = dixon_coles_simulate_match(L1_params, i, j, max_goals=10)
