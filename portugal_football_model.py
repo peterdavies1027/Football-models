@@ -143,8 +143,8 @@ portugal_params = solve_parameters_decay(portugal_1820, xi = 0.00325)
 portugal_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
                                       'Away win', '1X', 'X2', '12', 'BTTS', 'No BTTS'])
 
-HomeTeam = ['Rio Ave', 'Sp Braga', 'Belenenses', 'Benfica', 'Famalicao', 'Nacional', 'Moreirense']
-AwayTeam = ['Pacos Ferreira', 'Sp Lisbon', 'Gil Vicente', 'Santa Clara', 'Tondela', 'Guimaraes', 'Porto']
+HomeTeam = ['Sp Braga', 'Maritimo', 'Rio Ave']
+AwayTeam = ['Pacos Ferreira', 'Gil Vicente', 'Sp Lisbon']
 
 for i, j in zip(HomeTeam, AwayTeam):
     matrix = dixon_coles_simulate_match(portugal_params, i, j, max_goals=10)
