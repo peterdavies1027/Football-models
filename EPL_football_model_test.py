@@ -88,6 +88,11 @@ epl_1720 = epl_all[['Date', 'HomeTeam','AwayTeam','FTHG','FTAG', 'FTR', 'time_di
 epl_1720 = epl_1720.rename(columns={'FTHG': 'HomeGoals', 'FTAG': 'AwayGoals'})
 epl_1720 = epl_1720.dropna(how='all')
 
+epl_1720_HT = epl_all[['Date', 'HomeTeam','AwayTeam','HTHG','HTAG', 'HTR', 'time_diff']]
+epl_1720_HT = epl_1720_HT.rename(columns={'HTHG': 'HomeGoals',
+                                          'HTAG': 'AwayGoals'})
+epl_1720_HT = epl_1720_HT.dropna(how = 'all')
+
 """dates_df = pd.read_csv('Dates.csv')
 
 list_dates = dates_df['2019-01-01'].tolist()
@@ -173,17 +178,20 @@ final_dataset['profit_loss'] = ''
 final_dataset['%_profit_loss'] = ''"""
 
       
-params = solve_parameters_decay(epl_1720, xi = 0.00325)
+epl_params = solve_parameters_decay(epl_1720, xi = 0.00325)
+
+epl_HT_params = solve_parameters_decay(epl_1720_HT, xi = 0.00325)
 
 epl_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
-                                      'Away win', '1X', 'X2', '12', 'BTTS', 'No BTTS'])
+                                      'Away win', '1X', 'X2', '12', 'BTTS', 'No BTTS', 
+                                      'HT Home', 'HT Draw', 'HT Away'])
 
-HomeTeam = ['West Brom', 'Burnley']
-AwayTeam = ['Wolves', 'West Ham']
+HomeTeam = ['Leeds']
+AwayTeam = ['Tottenham']
     
 for i, j in zip(HomeTeam, AwayTeam):
-    matrix = dixon_coles_simulate_match(params, i, j, max_goals=10)
-    
+    matrix = dixon_coles_simulate_match(epl_params, i, j, max_goals=10)
+        
     matrix_df = pd.DataFrame(matrix)
     matrix_df = matrix_df * 100
     
@@ -208,12 +216,41 @@ for i, j in zip(HomeTeam, AwayTeam):
     not_btts_odds = round(100/not_btts, 2)
     btts_odds = round(100/btts, 2)   
     
+    matrix_HT = dixon_coles_simulate_match(epl_HT_params, i, j, max_goals = 10)
+    
+    matrix_HT_df = pd.DataFrame(matrix_HT)
+    matrix_HT_df = matrix_HT_df * 1000
+    
+    home_HT_win = np.sum(np.tril(matrix_HT, -1))
+    draw_HT = np.sum(np.diag(matrix_HT))
+    away_HT_win = np.sum(np.triu(matrix_HT, 1))
+    
+    home_odds_HT = round(1/home_HT_win, 2)
+    draw_odds_HT = round(1/draw_HT, 2)
+    away_odds_HT = round(1/away_HT_win, 2)
+    
+    """ho_dr_HT = round(1/(home_HT_win + draw_HT), 2)
+    dr_aw_HT = round(1/(draw_HT + away_HT_win), 2)
+    ha_win_HT = round(1/(home_HT_win + away_HT_win), 2)
+    
+    matrix_HT_df.loc['Total', :] = matrix_HT_df.sum(axis = 0)
+    matrix_HT_df.loc[:, 'Total'] = matrix_HT_df.sum(axis = 1)
+    
+    not_btts_HT = (matrix_HT_df.iloc[-1, 0] + matrix_HT_df.iloc[0, -1] - matrix_HT_df.iloc[0, 0])
+    btts_HT = 100 - not_btts_HT
+    
+    not_btts_HT_odds = round(100/not_btts_HT, 2)
+    btts_HT_odds = round(100/btts_HT, 2) """
+    
     home_away = [i, j, home_odds, draw_odds, away_odds, ho_dr, 
-                 dr_aw, ha_win, btts_odds, not_btts_odds]
+                 dr_aw, ha_win, btts_odds, not_btts_odds,
+                 home_odds_HT, draw_odds_HT, away_odds_HT]
     home_away_df = pd.DataFrame(home_away)
     home_away_trans = home_away_df.transpose()
     home_away_trans.columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
-                                      'Away win', '1X', 'X2', '12', 'BTTS', 'No BTTS']
+                                      'Away win', '1X', 'X2', '12', 'BTTS', 
+                                      'No BTTS', 'HT Home', 'HT Draw', 
+                                      'HT Away']
     
     epl_prediction = epl_prediction.append(home_away_trans)
     
