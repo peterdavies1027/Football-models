@@ -64,7 +64,7 @@ def solve_parameters_decay(dataset, xi=0.001, debug = False, init_vals=None, opt
         score_coefs = dict(zip(teams, params[:n_teams]))
         defend_coefs = dict(zip(teams, params[n_teams:(2*n_teams)]))
         rho, gamma = params[-2:]
-        log_like = [dc_log_like_decay(row.HomeGoals, row.AwayGoals, score_coefs[row.HomeTeam], defend_coefs[row.HomeTeam],
+        log_like = [dc_log_like_decay(row.HomeYellowC, row.AwayYellowC, score_coefs[row.HomeTeam], defend_coefs[row.HomeTeam],
                                       score_coefs[row.AwayTeam], defend_coefs[row.AwayTeam], 
                                       rho, gamma, row.time_diff, xi=xi) for row in dataset.itertuples()]
         return -sum(log_like)
@@ -84,8 +84,8 @@ for year in range(17,21):
     epl_all = pd.concat((epl_all, pd.read_csv("http://www.football-data.co.uk/mmz4281/{}{}/E0.csv".format(year, year+1, sort=True))))
 epl_all['Date'] = pd.to_datetime(epl_all['Date'],  format='%d/%m/%Y')
 epl_all['time_diff'] = (max(epl_all['Date']) - epl_all['Date']).dt.days
-epl_1720 = epl_all[['Date', 'HomeTeam','AwayTeam','FTHG','FTAG', 'FTR', 'time_diff']]
-epl_1720 = epl_1720.rename(columns={'FTHG': 'HomeGoals', 'FTAG': 'AwayGoals'})
+epl_1720 = epl_all[['HomeTeam','AwayTeam','HY','AY', 'FTR', 'time_diff']]
+epl_1720 = epl_1720.rename(columns={'HY': 'HomeYellowC', 'AY': 'AwayYellowC'})
 epl_1720 = epl_1720.dropna(how='all')
 
 """dates_df = pd.read_csv('Dates.csv')
@@ -175,11 +175,11 @@ final_dataset['%_profit_loss'] = ''"""
       
 params = solve_parameters_decay(epl_1720, xi = 0.00325)
 
-epl_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
-                                      'Away win', '1X', 'X2', '12', 'BTTS', 'No BTTS'])
-
-HomeTeam = ['West Brom', 'Burnley']
-AwayTeam = ['Wolves', 'West Ham']
+epl_YC_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'O2.5YC', 'U2.5YC',
+                                            'Home more cards', 'Draw', 'Away more cards'
+                                            ])
+HomeTeam = ['Leicester']
+AwayTeam = ['Newcastle']
     
 for i, j in zip(HomeTeam, AwayTeam):
     matrix = dixon_coles_simulate_match(params, i, j, max_goals=10)
@@ -195,27 +195,25 @@ for i, j in zip(HomeTeam, AwayTeam):
     draw_odds = round(1/draw, 2)
     away_odds = round(1/away_win, 2)
     
-    ho_dr = round(1/(home_win + draw), 2)
-    dr_aw = round(1/(draw + away_win), 2)
-    ha_win = round(1/(home_win + away_win), 2)
-    
     matrix_df.loc['Total', :] = matrix_df.sum(axis = 0)
     matrix_df.loc[:, 'Total'] = matrix_df.sum(axis = 1)
     
-    not_btts = (matrix_df.iloc[-1, 0] + matrix_df.iloc[0, -1] - matrix_df.iloc[0, 0])
-    btts = 100 - not_btts
+    U2_5Y = (matrix_df.iloc[0, 0] + matrix_df.iloc[0, 1]
+             + matrix_df.iloc[0, 2] + matrix_df.iloc[1, 0]
+             + matrix_df.iloc[2, 0] + matrix_df.iloc[1, 1])
+    O2_5Y = 100 - U2_5Y
     
-    not_btts_odds = round(100/not_btts, 2)
-    btts_odds = round(100/btts, 2)   
+    U2_5Y_odds = round(100/U2_5Y, 2)
+    O2_5Y_odds = round(100/O2_5Y, 2)   
     
-    home_away = [i, j, home_odds, draw_odds, away_odds, ho_dr, 
-                 dr_aw, ha_win, btts_odds, not_btts_odds]
+    home_away = [i, j, O2_5Y_odds, U2_5Y_odds, 
+                 home_odds, draw_odds, away_odds]
     home_away_df = pd.DataFrame(home_away)
     home_away_trans = home_away_df.transpose()
-    home_away_trans.columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
-                                      'Away win', '1X', 'X2', '12', 'BTTS', 'No BTTS']
+    home_away_trans.columns = ['HomeTeam', 'AwayTeam', 'O2.5YC', 'U2.5YC', 
+                               'Home more cards', 'Draw', 'Away more cards']
     
-    epl_prediction = epl_prediction.append(home_away_trans)
+    epl_YC_prediction = epl_YC_prediction.append(home_away_trans)
     
 #end_date = '2020-09-11'
 #epl_backseries_for_2020 = final_dataset[final_dataset['Date'] <= end_date]  
