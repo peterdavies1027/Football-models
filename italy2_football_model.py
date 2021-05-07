@@ -147,17 +147,49 @@ italy2_1420 = italy2_1420.dropna(how='all')
 
 italy2_params = solve_parameters_decay(italy2_1420, xi = 0.00325)
 
-cos_per = italy2_match_day('Cosenza', 'Perugia')
-asc_emp = italy2_match_day('Ascoli', 'Empoli')
-cre_chi = italy2_match_day('Cremonese', 'Chievo')
-cro_por = italy2_match_day('Crotone', 'Pordenone')
-ent_pis = italy2_match_day('Virtus Entella', 'Pisa')
-fro_juv = italy2_match_day('Frosinone', 'Juve Stabia')
-liv_spe = italy2_match_day('Livorno', 'Spezia')
-sal_cit = italy2_match_day('Salernitana', 'Cittadella')
-tra_ben = italy2_match_day('Trapani', 'Benevento')
-ven_pes = italy2_match_day('Venezia', 'Pescara')
+italy2_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
+                                      'Away win', '1X', 'X2', '12', 
+                                      'BTTS', 'No BTTS'])
 
+HomeTeam = ['Lazio', 'Bologna', 'Napoli', 'Sassuolo',
+            'Udinese', 'Sampdoria']
+AwayTeam = ['Genoa', 'Fiorentina', 'Cagliari', 'Atalanta', 
+            'Juventus', 'AS Roma']
+
+for i, j in zip(HomeTeam, AwayTeam):
+    matrix = dixon_coles_simulate_match(italy2_params, i, j, max_goals=10)
+    
+    matrix_df = pd.DataFrame(matrix)
+    matrix_df = matrix_df * 100
+    
+    home_win = np.sum(np.tril(matrix, -1))
+    draw = np.sum(np.diag(matrix))
+    away_win = np.sum(np.triu(matrix, 1))
+    
+    home_odds = round(1/home_win, 2)
+    draw_odds = round(1/draw, 2)
+    away_odds = round(1/away_win, 2)
+    
+    ho_dr = round(1/(home_win + draw), 2)
+    dr_aw = round(1/(draw + away_win), 2)
+    ha_win = round(1/(home_win + away_win), 2)
+    
+    matrix_df.loc['Total', :] = matrix_df.sum(axis = 0)
+    matrix_df.loc[:, 'Total'] = matrix_df.sum(axis = 1)
+    
+    not_btts = (matrix_df.iloc[-1, 0] + matrix_df.iloc[0, -1] - matrix_df.iloc[0, 0])
+    btts = 100 - not_btts
+    
+    not_btts_odds = round(100/not_btts, 2)
+    btts_odds = round(100/btts, 2)   
+    
+    home_away = [i, j, home_odds, draw_odds, away_odds, ho_dr, 
+                 dr_aw, ha_win, btts_odds, not_btts_odds]
+    home_away_df = pd.DataFrame(home_away)
+    home_away_trans = home_away_df.transpose()
+    home_away_trans.columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
+                                      'Away win', '1X', 'X2', '12', 'BTTS', 'No BTTS']
+    italy2_prediction = italy2_prediction.append(home_away_trans)
 
 
 
