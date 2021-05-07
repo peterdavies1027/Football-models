@@ -84,9 +84,9 @@ for year in range(17,21):
     epl_all = pd.concat((epl_all, pd.read_csv("http://www.football-data.co.uk/mmz4281/{}{}/E0.csv".format(year, year+1, sort=True))))
 epl_all['Date'] = pd.to_datetime(epl_all['Date'],  format='%d/%m/%Y')
 epl_all['time_diff'] = (max(epl_all['Date']) - epl_all['Date']).dt.days
-epl_1720 = epl_all[['HomeTeam','AwayTeam','HY','AY', 'FTR', 'time_diff']]
-epl_1720 = epl_1720.rename(columns={'HY': 'HomeYellowC', 'AY': 'AwayYellowC'})
-epl_1720 = epl_1720.dropna(how='all')
+epl_YC_1720 = epl_all[['HomeTeam','AwayTeam','HY','AY', 'FTR', 'time_diff']]
+epl_YC_1720 = epl_YC_1720.rename(columns={'HY': 'HomeYellowC', 'AY': 'AwayYellowC'})
+epl_YC_1720 = epl_YC_1720.dropna(how='all')
 
 """dates_df = pd.read_csv('Dates.csv')
 
@@ -173,7 +173,7 @@ final_dataset['profit_loss'] = ''
 final_dataset['%_profit_loss'] = ''"""
 
       
-params = solve_parameters_decay(epl_1720, xi = 0.00325)
+params = solve_parameters_decay(epl_YC_1720, xi = 0.00325)
 
 epl_YC_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'O2.5YC', 'U2.5YC',
                                             'Home more cards', 'Draw', 'Away more cards'
