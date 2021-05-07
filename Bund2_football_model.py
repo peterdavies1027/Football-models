@@ -172,8 +172,8 @@ bund2_params = solve_parameters_decay(bund2_1820, xi = 0.00325)
 bund2_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
                                       'Away win', '1X', 'X2', '12', 'BTTS', 'No BTTS'])
 
-HomeTeam = ['Regensburg', 'Sandhausen', 'St Pauli']
-AwayTeam = ['Hamburg', 'Hannover', 'Greuther Furth']
+HomeTeam = ['Hannover', 'Holstein Kiel']
+AwayTeam = ['Darmstadt', 'St Pauli']
 
 for i, j in zip(HomeTeam, AwayTeam):
     matrix = dixon_coles_simulate_match(bund2_params, i, j, max_goals=10)

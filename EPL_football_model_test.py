@@ -178,8 +178,8 @@ params = solve_parameters_decay(epl_1720, xi = 0.00325)
 epl_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
                                       'Away win', '1X', 'X2', '12', 'BTTS', 'No BTTS'])
 
-HomeTeam = ['West Brom', 'Burnley']
-AwayTeam = ['Wolves', 'West Ham']
+HomeTeam = ['Leicester']
+AwayTeam = ['Newcastle']
     
 for i, j in zip(HomeTeam, AwayTeam):
     matrix = dixon_coles_simulate_match(params, i, j, max_goals=10)

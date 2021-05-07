@@ -142,10 +142,8 @@ france_params = solve_parameters_decay(france_1820, xi = 0.00325)
 france_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
                                       'Away win', '1X', 'X2', '12', 'BTTS', 'No BTTS'])
 
-HomeTeam = ['Nice', 'Lens', 'Lorient', 'Rennes', 'Strasbourg', 'Angers',
-            'Lyon']
-AwayTeam = ['Montpellier', 'Nimes', 'Bordeaux', 'Dijon', 'Nantes', 
-            'Monaco', 'Lille']
+HomeTeam = ['Lens']
+AwayTeam = ['Lille']
 
 for i, j in zip(HomeTeam, AwayTeam):
     matrix = dixon_coles_simulate_match(france_params, i, j, max_goals=10)
