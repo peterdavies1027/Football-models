@@ -143,12 +143,12 @@ champ_params = solve_parameters_decay(champ_1820, xi = 0.00325)
 champ_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
                                       'Away win', '1X', 'X2', '12', 'BTTS', 'No BTTS'])
 
-HomeTeam = ['Sheffield Weds', 'Birmingham', 'Brentford', 'Huddersfield',
-            'Luton', 'Millwall', 'Norwich', 'Preston',
-            'Rotherham', 'Stoke', 'Swansea', 'Wycombe']
-AwayTeam = ["Nott'm Forest", 'Cardiff', 'Watford', 'Coventry', 'Middlesbrough',
-            'Bristol City', 'Reading', 'Barnsley', 'Blackburn', 
-            'QPR', 'Derby', 'Bournemouth']
+HomeTeam = ['Barnsley', 'Blackburn', 'Bournemouth', 'Bristol City', 'Cardiff', 
+            'Coventry', 'Derby', 'Middlesbrough', "Nott'm Forest", 
+            'QPR', 'Reading', 'Watford']
+AwayTeam = ['Norwich', 'Birmingham', 'Stoke', 'Brentford', 'Rotherham', 
+            'Millwall', 'Sheffield Weds', 'Wycombe', 'Preston', 
+            'Luton', 'Huddersfield', 'Swansea']
 
 for i, j in zip(HomeTeam, AwayTeam):
     matrix = dixon_coles_simulate_match(champ_params, i, j, max_goals=10)

@@ -142,8 +142,8 @@ spain2_params = solve_parameters_decay(spain2_1820, xi = 0.00325)
 spain2_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
                                       'Away win', 'BTTS', 'No BTTS'])
 
-HomeTeam = ['Tenerife']
-AwayTeam = ['Almeria']
+HomeTeam = ['Vallecano', 'Sp Gijon']
+AwayTeam = ['Leganes', 'Lugo']
 
 for i, j in zip(HomeTeam, AwayTeam):
     matrix = dixon_coles_simulate_match(spain2_params, i, j, max_goals=10)

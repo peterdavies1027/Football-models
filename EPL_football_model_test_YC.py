@@ -173,7 +173,7 @@ final_dataset['profit_loss'] = ''
 final_dataset['%_profit_loss'] = ''"""
 
       
-params = solve_parameters_decay(epl_YC_1720, xi = 0.00325)
+params_YC = solve_parameters_decay(epl_YC_1720, xi = 0.00325)
 
 epl_YC_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'O2.5YC', 'U2.5YC',
                                             'Home more cards', 'Draw', 'Away more cards'
@@ -182,32 +182,32 @@ HomeTeam = ['Leicester']
 AwayTeam = ['Newcastle']
     
 for i, j in zip(HomeTeam, AwayTeam):
-    matrix = dixon_coles_simulate_match(params, i, j, max_goals=10)
+    matrix_YC = dixon_coles_simulate_match(params_YC, i, j, max_goals=10)
     
-    matrix_df = pd.DataFrame(matrix)
-    matrix_df = matrix_df * 100
+    matrix_YC_df = pd.DataFrame(matrix_YC)
+    matrix_YC_df = matrix_YC_df * 100
     
-    home_win = np.sum(np.tril(matrix, -1))
-    draw = np.sum(np.diag(matrix))
-    away_win = np.sum(np.triu(matrix, 1))
+    home_win_YC = np.sum(np.tril(matrix_YC, -1))
+    draw_YC = np.sum(np.diag(matrix_YC))
+    away_win_YC = np.sum(np.triu(matrix_YC, 1))
     
-    home_odds = round(1/home_win, 2)
-    draw_odds = round(1/draw, 2)
-    away_odds = round(1/away_win, 2)
+    home_YC_odds = round(1/home_win_YC, 2)
+    draw_YC_odds = round(1/draw_YC, 2)
+    away_YC_odds = round(1/away_win_YC, 2)
     
-    matrix_df.loc['Total', :] = matrix_df.sum(axis = 0)
-    matrix_df.loc[:, 'Total'] = matrix_df.sum(axis = 1)
+    matrix_YC_df.loc['Total', :] = matrix_YC_df.sum(axis = 0)
+    matrix_YC_df.loc[:, 'Total'] = matrix_YC_df.sum(axis = 1)
     
-    U2_5Y = (matrix_df.iloc[0, 0] + matrix_df.iloc[0, 1]
-             + matrix_df.iloc[0, 2] + matrix_df.iloc[1, 0]
-             + matrix_df.iloc[2, 0] + matrix_df.iloc[1, 1])
-    O2_5Y = 100 - U2_5Y
+    U2_5YC = (matrix_YC_df.iloc[0, 0] + matrix_YC_df.iloc[0, 1]
+             + matrix_YC_df.iloc[0, 2] + matrix_YC_df.iloc[1, 0]
+             + matrix_YC_df.iloc[2, 0] + matrix_YC_df.iloc[1, 1])
+    O2_5YC = 100 - U2_5YC
     
-    U2_5Y_odds = round(100/U2_5Y, 2)
-    O2_5Y_odds = round(100/O2_5Y, 2)   
+    U2_5YC_odds = round(100/U2_5YC, 2)
+    O2_5YC_odds = round(100/O2_5YC, 2)   
     
-    home_away = [i, j, O2_5Y_odds, U2_5Y_odds, 
-                 home_odds, draw_odds, away_odds]
+    home_away = [i, j, O2_5YC_odds, U2_5YC_odds, 
+                 home_YC_odds, draw_YC_odds, away_YC_odds]
     home_away_df = pd.DataFrame(home_away)
     home_away_trans = home_away_df.transpose()
     home_away_trans.columns = ['HomeTeam', 'AwayTeam', 'O2.5YC', 'U2.5YC', 

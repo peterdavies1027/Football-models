@@ -117,22 +117,45 @@ def solve_parameters_decay_YC(dataset, xi=0.001, debug = False, init_vals=None, 
                         ['rho', 'home_adv'],
                         opt_output.x))
   
-    
+# Create a blank DataFrame for all fixtures in the EPL  
 epl_all = pd.DataFrame()
+
+# Get the data from football-data for the seasons 2017-2021, this will need to 
+# be changed each year for the newest season
 for year in range(17,21):
+    
+    # Concatenate all of them together into 1 DataFrame
     epl_all = pd.concat((epl_all, pd.read_csv("http://www.football-data.co.uk/mmz4281/{}{}/E0.csv".format(year, year+1, sort=True))))
+
+# Ensure that the date is ina  sensible format, day/month/year
 epl_all['Date'] = pd.to_datetime(epl_all['Date'],  format='%d/%m/%Y')
+
+# Create a variable for time difference, this will be the number of days
+# from today. This variable is a factor that would be used to give more 
+# weight to the latest matches.
 epl_all['time_diff'] = (max(epl_all['Date']) - epl_all['Date']).dt.days
+
+# We are only interested in the date, home team, away team, goals, results
+# and the time difference
 epl_1720 = epl_all[['Date', 'HomeTeam','AwayTeam','FTHG','FTAG', 'FTR', 'time_diff']]
+
+# Rename some columns to sensible names
 epl_1720 = epl_1720.rename(columns={'FTHG': 'HomeGoals', 'FTAG': 'AwayGoals'})
+
+# Not interested in anything with na in this dataset
 epl_1720 = epl_1720.dropna(how='all')
 
+# Same dataset as above however we are interested in yellow cards rather than goals
 epl_YC_1720 = epl_all[['HomeTeam','AwayTeam','HY','AY', 'FTR', 'time_diff']]
+
+# Rename some columns so they are of more use
 epl_YC_1720 = epl_YC_1720.rename(columns={'HY': 'HomeYellowC', 'AY': 'AwayYellowC'})
+
+# Not interested in anything with na in this dataset
 epl_YC_1720 = epl_YC_1720.dropna(how='all')
 
 
-
+# This is looking at the back series however not fully complete.
 """dates_df = pd.read_csv('Dates.csv')
 
 list_dates = dates_df['2019-01-01'].tolist()
@@ -217,89 +240,139 @@ final_dataset['outcome_of_bet'] = ''
 final_dataset['profit_loss'] = ''
 final_dataset['%_profit_loss'] = ''"""
 
-      
+# Creates variables for attack and defence for each team, giving more weight
+# to the most rececnt results. Can change the xi value however this seems 
+# the best value at the moment. Something to look in to at a later date
 params = solve_parameters_decay(epl_1720, xi = 0.00325)
 
+# Creates variables for ytellow cards for each team
 params_YC = solve_parameters_decay_YC(epl_YC_1720, xi = 0.00325)
 
+# Create a DataFrame with all the values we are interested in
 epl_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
                                       'Away win', '1X', 'X2', '12', 'BTTS', 'No BTTS',
                                       'Over 2.5G', 'Under 2.5G', 'Over 2.5YC',
                                       'Under 2.5YC'])
 
-HomeTeam = ['Man United', 'Southampton']
-AwayTeam = ['Leicester', 'Crystal Palace']
-    
+# List of home teams in the fixtures we are interested in
+HomeTeam = ['Chelsea']
+
+# List of away teams in the fixtures we are intrested in.
+# WARNING this has to be in the same order as above.
+AwayTeam = ['Arsenal']
+   
+# This simulates matches between the HomeTeam and AwayTeam in the lists above 
 for i, j in zip(HomeTeam, AwayTeam):
+    # Gives odds on all the scores up to 10 goals for each team, probably overkill
+    # Creates a matrix with all of the results
     matrix = dixon_coles_simulate_match(params, i, j, max_goals=10)
     
+    # Change the matrix into a DataFrame
     matrix_df = pd.DataFrame(matrix)
+    
+    # Multiply this by 100 to make the maths easier
     matrix_df = matrix_df * 100
     
+    # Sums the triangle of the matrix where the home team would win
     home_win = np.sum(np.tril(matrix, -1))
+    
+    # Sums the diagonal which will indicate a draw
     draw = np.sum(np.diag(matrix))
+    
+    # Sums the triangle of the matrix where the away team would win
     away_win = np.sum(np.triu(matrix, 1))
     
+    # Find the odds of the home team, draw and away team. Round this to 2dp
     home_odds = round(1/home_win, 2)
     draw_odds = round(1/draw, 2)
     away_odds = round(1/away_win, 2)
     
+    # Find the odds for 1X, X2, 12. Round this to 2dp
     ho_dr = round(1/(home_win + draw), 2)
     dr_aw = round(1/(draw + away_win), 2)
     ha_win = round(1/(home_win + away_win), 2)
     
+    # Add a row and column which sums the amount of goals for each team
     matrix_df.loc['Total', :] = matrix_df.sum(axis = 0)
     matrix_df.loc[:, 'Total'] = matrix_df.sum(axis = 1)
-    
+  
+    # Add up the scores for where the both teams do not score
     not_btts = (matrix_df.iloc[-1, 0] + matrix_df.iloc[0, -1] - matrix_df.iloc[0, 0])
+    
+    # 100 - not_btts to find out both teams to score
     btts = 100 - not_btts
     
+    # Find the odds for btts and not_btts
     not_btts_odds = round(100/not_btts, 2)
     btts_odds = round(100/btts, 2)   
     
+    # Add up the parts of the matrix where there are under 2.5 goals
     U2_5G = (matrix_df.iloc[0, 0] + matrix_df.iloc[0, 1]
              + matrix_df.iloc[0, 2] + matrix_df.iloc[1, 0]
              + matrix_df.iloc[2, 0] + matrix_df.iloc[1, 1])
+    
+    # 100 - U2_5G to find O2_5G
     O2_5G = 100 - U2_5G
   
+    # Calculate the odds for under and over 2.5 goals, rounded to 2dp
     U2_5G_odds = round(100/U2_5G, 2)
     O2_5G_odds = round(100/O2_5G, 2) 
     
+    # Same as above but for yellow cards
     matrix_YC = dixon_coles_simulate_match(params_YC, i, j, max_goals=10)
     
+    # Turn the results into a DataFrame and multiply by 100
     matrix_YC_df = pd.DataFrame(matrix_YC)
     matrix_YC_df = matrix_YC_df * 100
     
+    # Sum the triangle of the matrix where the home team has more yellow cards
     home_win_YC = np.sum(np.tril(matrix_YC, -1))
+    
+    # Sum the diagonol where the home and away team have the same cards
     draw_YC = np.sum(np.diag(matrix_YC))
+    
+    # Sum the triangle of the matrix where the away team has more yellow cards
     away_win_YC = np.sum(np.triu(matrix_YC, 1))
     
+    # Find the odds for all the above, rounded to 2dp.
     home_YC_odds = round(1/home_win_YC, 2)
     draw_YC_odds = round(1/draw_YC, 2)
     away_YC_odds = round(1/away_win_YC, 2)
     
+    # Sum all of the columns and rows to find the totals for each team
     matrix_YC_df.loc['Total', :] = matrix_YC_df.sum(axis = 0)
     matrix_YC_df.loc[:, 'Total'] = matrix_YC_df.sum(axis = 1)
     
+    # Add up the parts where there are less than 2.5 cards
     U2_5YC = (matrix_YC_df.iloc[0, 0] + matrix_YC_df.iloc[0, 1]
              + matrix_YC_df.iloc[0, 2] + matrix_YC_df.iloc[1, 0]
              + matrix_YC_df.iloc[2, 0] + matrix_YC_df.iloc[1, 1])
+    
+    # 100 - U2.5C to find over 2.5 cards
     O2_5YC = 100 - U2_5YC
     
+    # Calculate the odds for each, to 2 dp
     U2_5YC_odds = round(100/U2_5YC, 2)
     O2_5YC_odds = round(100/O2_5YC, 2)   
         
+    # Create a list for each home team, away team and all the calculations above
     home_away = [i, j, home_odds, draw_odds, away_odds, ho_dr, 
                  dr_aw, ha_win, btts_odds, not_btts_odds, 
                  U2_5G_odds, O2_5G_odds, O2_5YC_odds, U2_5YC_odds]
     
+    # Turn the above into a DataFrame
     home_away_df = pd.DataFrame(home_away)
+    
+    # Transpose the above DataFrame
     home_away_trans = home_away_df.transpose()
+    
+    # Name the columns
     home_away_trans.columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
                                       'Away win', '1X', 'X2', '12', 'BTTS', 
                                       'No BTTS', 'Over 2.5G', 'Under 2.5G',
                                       'Over 2.5YC', 'Under 2.5YC']
     
+    # Append the above onto the epl_prediction for the two teams ran above
     epl_prediction = epl_prediction.append(home_away_trans)
     
 #end_date = '2020-09-11'

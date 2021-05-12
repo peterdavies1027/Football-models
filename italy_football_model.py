@@ -152,10 +152,10 @@ italy_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', '
                                       'Away win', '1X', 'X2', '12', 
                                       'BTTS', 'No BTTS'])
 
-HomeTeam = ['Lazio', 'Bologna', 'Napoli', 'Sassuolo',
-            'Udinese', 'Sampdoria']
-AwayTeam = ['Genoa', 'Fiorentina', 'Cagliari', 'Atalanta', 
-            'Juventus', 'AS Roma']
+HomeTeam = ['Cagliari', 'Atalanta', 'Bologna', 'Inter', 'Lazio', 
+            'Sampdoria', 'Sassuolo', 'Torino']
+AwayTeam = ['Fiorentina', 'Benevento', 'Genoa', 'Roma', 'Parma', 
+            'Spezia', 'Juventus', 'Milan']
 
 for i, j in zip(HomeTeam, AwayTeam):
     matrix = dixon_coles_simulate_match(italy_params, i, j, max_goals=10)

@@ -172,12 +172,12 @@ L2_params = solve_parameters_decay(L2_1820, xi = 0.00325)
 L2_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
                                       'Away win', '1X', 'X2', '12', 'BTTS', 'No BTTS'])
 
-HomeTeam = ['Bradford', 'Colchester', 'Forest Green', 
-            'Grimsby', 'Leyton Orient', 'Mansfield', 'Newport County', 
-            'Stevenage', 'Walsall']
-AwayTeam = ['Scunthorpe', 'Salford', 'Tranmere', 'Port Vale', 
-            'Carlisle', 'Oldham', 'Cheltenham', 'Crawley Town', 
-            'Morecambe']
+HomeTeam = ['Cambridge', 'Carlisle', 
+            'Morecambe', 'Oldham', 'Port Vale', 'Salford', 'Scunthorpe',
+            'Tranmere']
+AwayTeam = ['Grimsby', 'Walsall',
+            'Bradford', 'Forest Green', 'Mansfield', 'Leyton Orient',
+            'Stevenage', 'Colchester']
 
 for i, j in zip(HomeTeam, AwayTeam):
     matrix = dixon_coles_simulate_match(L2_params, i, j, max_goals=10)

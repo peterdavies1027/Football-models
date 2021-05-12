@@ -142,10 +142,10 @@ france2_params = solve_parameters_decay(france2_1820, xi = 0.00325)
 france2_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
                                       'Away win', '1X', 'X2', '12', 'BTTS', 'No BTTS'])
 
-HomeTeam = ['Amiens', 'Caen', 'Chateauroux', 'Dunkerque', 
-            'Le Havre', 'Nancy', 'Niort', 'Pau FC']
-AwayTeam = ['Guingamp', 'Auxerre', 'Troyes', 'Sochaux', 'Chambly', 
-            'Valenciennes', 'Rodez', 'Ajaccio']
+HomeTeam = ['Ajaccio', 'Amiens', 'Auxerre', 'Chambly', 'Clermont', 
+            'Guingamp', 'Rodez', 'Toulouse', 'Troyes', 'Valenciennes']
+AwayTeam = ['Paris FC', 'Niort', 'Grenoble', 'Pau FC', 'Sochaux', 
+            'Chateauroux', 'Nancy', 'Caen', 'Dunkerque', 'Le Havre']
 
 for i, j in zip(HomeTeam, AwayTeam):
     matrix = dixon_coles_simulate_match(france2_params, i, j, max_goals=10)
