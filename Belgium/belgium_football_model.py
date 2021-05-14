@@ -1,9 +1,8 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Jun 22 13:39:12 2020
+Created on Sun Apr 18 17:37:08 2021
 
-@author: ashlee
+@author: -
 """
 
 import pandas as pd
@@ -13,9 +12,9 @@ from scipy.stats import poisson,skellam
 from scipy.optimize import minimize, fmin
 from multiprocessing import Pool
 
-def calc_means(italy_param_dict, homeTeam, awayTeam):
-    return [np.exp(italy_param_dict['attack_'+homeTeam] + italy_param_dict['defence_'+awayTeam] + italy_param_dict['home_adv']),
-            np.exp(italy_param_dict['defence_'+homeTeam] + italy_param_dict['attack_'+awayTeam])]
+def calc_means(belgium_param_dict, homeTeam, awayTeam):
+    return [np.exp(belgium_param_dict['attack_'+homeTeam] + belgium_param_dict['defence_'+awayTeam] + belgium_param_dict['home_adv']),
+            np.exp(belgium_param_dict['defence_'+homeTeam] + belgium_param_dict['attack_'+awayTeam])]
 
 def rho_correction(x, y, lambda_x, mu_y, rho):
     if x==0 and y==0:
@@ -29,17 +28,17 @@ def rho_correction(x, y, lambda_x, mu_y, rho):
     else:
         return 1.0
 
-def dixon_coles_simulate_match(italy_params_dict, homeTeam, awayTeam, max_goals=10):
-    team_avgs = calc_means(italy_params_dict, homeTeam, awayTeam)
+def dixon_coles_simulate_match(belgium_params_dict, homeTeam, awayTeam, max_goals=5):
+    team_avgs = calc_means(belgium_params_dict, homeTeam, awayTeam)
     team_pred = [[poisson.pmf(i, team_avg) for i in range(0, max_goals+1)] for team_avg in team_avgs]
     output_matrix = np.outer(np.array(team_pred[0]), np.array(team_pred[1]))
     correction_matrix = np.array([[rho_correction(home_goals, away_goals, team_avgs[0],
-                                                   team_avgs[1], italy_params_dict['rho']) for away_goals in range(2)]
+                                                   team_avgs[1], belgium_params_dict['rho']) for away_goals in range(2)]
                                    for home_goals in range(2)])
     output_matrix[:2,:2] = output_matrix[:2,:2] * correction_matrix
     return output_matrix
 
-def solve_parameters_decay(dataset, xi=0.00325, debug = False, init_vals=None, options={'disp': True, 'maxiter':100},
+def solve_parameters_decay(dataset, xi=0.001, debug = False, init_vals=None, options={'disp': True, 'maxiter':100},
                      constraints = [{'type':'eq', 'fun': lambda x: sum(x[:20])-20}] , **kwargs):
     teams = np.sort(dataset['HomeTeam'].unique())
     # check for no weirdness in dataset
@@ -59,10 +58,10 @@ def solve_parameters_decay(dataset, xi=0.00325, debug = False, init_vals=None, o
         return  np.exp(-xi*t) * (np.log(rho_correction(x, y, lambda_x, mu_y, rho)) + 
                                   np.log(poisson.pmf(x, lambda_x)) + np.log(poisson.pmf(y, mu_y)))
 
-    def estimate_paramters(italy_params):
-        score_coefs = dict(zip(teams, italy_params[:n_teams]))
-        defend_coefs = dict(zip(teams, italy_params[n_teams:(2*n_teams)]))
-        rho, gamma = italy_params[-2:]
+    def estimate_paramters(belgium_params):
+        score_coefs = dict(zip(teams, belgium_params[:n_teams]))
+        defend_coefs = dict(zip(teams, belgium_params[n_teams:(2*n_teams)]))
+        rho, gamma = belgium_params[-2:]
         log_like = [dc_log_like_decay(row.HomeGoals, row.AwayGoals, score_coefs[row.HomeTeam], defend_coefs[row.HomeTeam],
                                       score_coefs[row.AwayTeam], defend_coefs[row.AwayTeam], 
                                       rho, gamma, row.time_diff, xi=xi) for row in dataset.itertuples()]
@@ -77,8 +76,9 @@ def solve_parameters_decay(dataset, xi=0.00325, debug = False, init_vals=None, o
                         ['rho', 'home_adv'],
                         opt_output.x))
 
-def italy_match_day(HomeTeam, AwayTeam):
-    matrix = dixon_coles_simulate_match(italy_params, HomeTeam, AwayTeam, max_goals=5)
+
+def spain_match_day(HomeTeam, AwayTeam):
+    matrix = dixon_coles_simulate_match(belgium_params, HomeTeam, AwayTeam, max_goals=5)
     
     matrix_df = pd.DataFrame(matrix)
     matrix_df = matrix_df * 100
@@ -126,39 +126,29 @@ def italy_match_day(HomeTeam, AwayTeam):
     print(' ')
     return matrix, home_win, draw, away_win, ho_dr, dr_aw, ha_win, home_odds, draw_odds, away_odds
     
-    
-    
-italy_1820 = pd.DataFrame()
+# This is the start of the code without functions
+
+belgium_1820 = pd.DataFrame()
 for year in range(18,21):
-    italy_1820 = pd.concat((italy_1820, pd.read_csv("http://www.football-data.co.uk/mmz4281/{}{}/I1.csv".format(year, year+1, sort=True))))
-italy_1820['Date'] = pd.to_datetime(italy_1820['Date'],  format='%d/%m/%Y')
+    belgium_1820 = pd.concat((belgium_1820, pd.read_csv("http://www.football-data.co.uk/mmz4281/{}{}/B1.csv".format(year, year+1, sort=True))))
+belgium_1820['Date'] = pd.to_datetime(belgium_1820['Date'],  format='%d/%m/%Y')
+belgium_1820['time_diff'] = (max(belgium_1820['Date']) - belgium_1820['Date']).dt.days
+belgium_1820 = belgium_1820[['HomeTeam','AwayTeam','FTHG','FTAG', 'FTR', 'time_diff']]
+belgium_1820 = belgium_1820.rename(columns={'FTHG': 'HomeGoals', 'FTAG': 'AwayGoals'})
+belgium_1820 = belgium_1820.dropna(how='all')
+     
+belgium_params = solve_parameters_decay(belgium_1820, xi = 0.00325)
 
-italy_1418 = pd.DataFrame()
-for year in range(14, 18):
-    italy_1418 = pd.concat((italy_1418, pd.read_csv("http://www.football-data.co.uk/mmz4281/{}{}/I1.csv".format(year, year+1, sort=True))))
-italy_1418['Date'] = pd.to_datetime(italy_1418['Date'],  format='%d/%m/%y')
+belgium_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
+                                      'Away win', 'BTTS', 'No BTTS'])
 
-italy_1420 = italy_1418.append(italy_1820)
-
-italy_1420['time_diff'] = (max(italy_1420['Date']) - italy_1420['Date']).dt.days
-italy_1420 = italy_1420[['HomeTeam','AwayTeam','FTHG','FTAG', 'FTR', 'time_diff']]
-italy_1420 = italy_1420.rename(columns={'FTHG': 'HomeGoals', 'FTAG': 'AwayGoals'})
-italy_1420 = italy_1420.dropna(how='all')
-
-
-italy_params = solve_parameters_decay(italy_1420, xi = 0.00325)
-
-italy_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
-                                      'Away win', '1X', 'X2', '12', 
-                                      'BTTS', 'No BTTS'])
-
-HomeTeam = ['Cagliari', 'Atalanta', 'Bologna', 'Inter', 'Lazio', 
-            'Sampdoria', 'Sassuolo', 'Torino']
-AwayTeam = ['Fiorentina', 'Benevento', 'Genoa', 'Roma', 'Parma', 
-            'Spezia', 'Juventus', 'Milan']
+HomeTeam = ['Club Brugge', 'Kortrijk', 'Oud-Heverlee Leuven', 'Oostende',
+            'Standard', 'St Truiden', 'Waregem']
+AwayTeam = ['Mouscron', 'Mechelen', 'Waasland-Beveren', 'Cercle Brugge', 
+            'Beerschot VA', 'Anderlecht', 'Gent']
 
 for i, j in zip(HomeTeam, AwayTeam):
-    matrix = dixon_coles_simulate_match(italy_params, i, j, max_goals=10)
+    matrix = dixon_coles_simulate_match(belgium_params, i, j, max_goals=10)
     
     matrix_df = pd.DataFrame(matrix)
     matrix_df = matrix_df * 100
@@ -171,10 +161,6 @@ for i, j in zip(HomeTeam, AwayTeam):
     draw_odds = round(1/draw, 2)
     away_odds = round(1/away_win, 2)
     
-    ho_dr = round(1/(home_win + draw), 2)
-    dr_aw = round(1/(draw + away_win), 2)
-    ha_win = round(1/(home_win + away_win), 2)
-    
     matrix_df.loc['Total', :] = matrix_df.sum(axis = 0)
     matrix_df.loc[:, 'Total'] = matrix_df.sum(axis = 1)
     
@@ -184,12 +170,10 @@ for i, j in zip(HomeTeam, AwayTeam):
     not_btts_odds = round(100/not_btts, 2)
     btts_odds = round(100/btts, 2)   
     
-    home_away = [i, j, home_odds, draw_odds, away_odds, ho_dr, 
-                 dr_aw, ha_win, btts_odds, not_btts_odds]
+    home_away = [i, j, home_odds, draw_odds, away_odds, btts_odds, not_btts_odds]
     home_away_df = pd.DataFrame(home_away)
     home_away_trans = home_away_df.transpose()
     home_away_trans.columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
-                                      'Away win', '1X', 'X2', '12', 'BTTS', 'No BTTS']
-    italy_prediction = italy_prediction.append(home_away_trans)
-
+                                      'Away win', 'BTTS', 'No BTTS']
+    belgium_prediction = belgium_prediction.append(home_away_trans)
 
