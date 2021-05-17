@@ -141,8 +141,10 @@ poland_params = solve_parameters_decay(poland_1220, xi = 0.00325)
 poland_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
                                       'Away win', '1X', 'X2', '12', 'BTTS', 'No BTTS'])
 
-HomeTeam = ['Rakow']
-AwayTeam = ['Piast Gliwice']
+HomeTeam = ['Cracovia', 'Jagiellonia', 'Lech Poznan', 'Legia', 'Piast Gliwice',
+            'Pogon Szczecin', 'Slask Wroclaw', 'Wisla Plock']
+AwayTeam = ['Warta Poznan', 'Lechia Gdansk', 'Gornik Z.', 'Podbeskidzie',
+            'Wisla', 'Rakow', 'Stal Mielec', 'Zaglebie']
 
 for i, j in zip(HomeTeam, AwayTeam):
     matrix = dixon_coles_simulate_match(poland_params, i, j, max_goals=10)
