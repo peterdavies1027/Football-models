@@ -220,7 +220,7 @@ params = solve_parameters_decay(epl_1720, xi = 0.00325)
 params_YC = solve_parameters_decay_YC(epl_YC_1720, xi = 0.00325)
 
 #Creates variables for corners for each team
-params_corners = solve_parameters_decay_corner(epl_corners_1720, xi = 0.00325)
+#params_corners = solve_parameters_decay_corner(epl_corners_1720, xi = 0.00325)
 
 ######
 ######
@@ -235,11 +235,11 @@ epl_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Dr
                                       #'Over 9.5 corners', 'Under 9.5 corners'"""])
 
 # List of home teams in the fixtures we are interested in
-HomeTeam = ['Crystal Palace', 'Tottenham', 'West Brom', 'Everton']
+HomeTeam = ['Man United', 'Southampton', 'Brighton', 'Chelsea']
 
 # List of away teams in the fixtures we are intrested in.
 # WARNING this has to be in the same order as above.
-AwayTeam = ['Aston Villa', 'Wolves', 'Liverpool', 'Sheffield United']
+AwayTeam = ['Fulham', 'Leeds', 'Man City', 'Leicester']
    
 # This simulates matches between the HomeTeam and AwayTeam in the lists above 
 for i, j in zip(HomeTeam, AwayTeam):

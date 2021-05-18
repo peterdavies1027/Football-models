@@ -140,10 +140,11 @@ spain2_1820 = spain2_1820.dropna(how='all')
 spain2_params = solve_parameters_decay(spain2_1820, xi = 0.00325)
 
 spain2_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
-                                      'Away win', 'BTTS', 'No BTTS'])
+                                      'Away win', 'BTTS', 'No BTTS', 'O2.5G', 
+                                      'Under 2.5G'])
 
-HomeTeam = ['Vallecano', 'Sp Gijon']
-AwayTeam = ['Leganes', 'Lugo']
+HomeTeam = ['Cartagena', 'Albacete', 'Ponferradina']
+AwayTeam = ['Almeria', 'Lugo', 'Espanol']
 
 for i, j in zip(HomeTeam, AwayTeam):
     matrix = dixon_coles_simulate_match(spain2_params, i, j, max_goals=10)
@@ -168,11 +169,26 @@ for i, j in zip(HomeTeam, AwayTeam):
     not_btts_odds = round(100/not_btts, 2)
     btts_odds = round(100/btts, 2)   
     
-    home_away = [i, j, home_odds, draw_odds, away_odds, btts_odds, not_btts_odds]
+        # Add up the parts of the matrix where there are under 2.5 goals
+    U2_5G = (matrix_df.iloc[0, 0] + matrix_df.iloc[0, 1]
+             + matrix_df.iloc[0, 2] + matrix_df.iloc[1, 0]
+             + matrix_df.iloc[2, 0] + matrix_df.iloc[1, 1])
+    
+    # 100 - U2_5G to find O2_5G
+    O2_5G = 100 - U2_5G
+  
+    # Calculate the odds for under and over 2.5 goals, rounded to 2dp
+    U2_5G_odds = round(100/U2_5G, 2)
+    O2_5G_odds = round(100/O2_5G, 2) 
+    
+    
+    home_away = [i, j, home_odds, draw_odds, away_odds, btts_odds, not_btts_odds,
+                 O2_5G_odds, U2_5G_odds]
     home_away_df = pd.DataFrame(home_away)
     home_away_trans = home_away_df.transpose()
     home_away_trans.columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
-                                      'Away win', 'BTTS', 'No BTTS']
+                                      'Away win', 'BTTS', 'No BTTS', 'O2.5G', 
+                                      'Under 2.5G']
     spain2_prediction = spain2_prediction.append(home_away_trans)
 
 
