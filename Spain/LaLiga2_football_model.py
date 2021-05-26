@@ -143,8 +143,10 @@ spain2_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 
                                       'Away win', 'BTTS', 'No BTTS', 'O2.5G', 
                                       'Under 2.5G'])
 
-HomeTeam = ['Cartagena', 'Albacete', 'Ponferradina']
-AwayTeam = ['Almeria', 'Lugo', 'Espanol']
+HomeTeam = ['Oviedo', 'Almeria', 'Castellon', 'Fuenlabrada', 'Girona', 'Las Palmas', 
+            'Leganes', 'Lugo', 'Sabadell']
+AwayTeam = ['Mirandes', 'Logrones', 'Vallecano', 'Sp Gijon', 'Alcorcon', 'Albacete', 
+            'Malaga', 'Cartagena', 'Ponferradina']
 
 for i, j in zip(HomeTeam, AwayTeam):
     matrix = dixon_coles_simulate_match(spain2_params, i, j, max_goals=10)

@@ -235,11 +235,13 @@ epl_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Dr
                                       #'Over 9.5 corners', 'Under 9.5 corners'"""])
 
 # List of home teams in the fixtures we are interested in
-HomeTeam = ['Man United', 'Southampton', 'Brighton', 'Chelsea']
+HomeTeam = ['Arsenal', 'Aston Villa', 'Fulham', 'Leeds', 'Leicester', 'Liverpool',
+            'Man City', 'Sheffield United', 'West Ham', 'Wolves']
 
 # List of away teams in the fixtures we are intrested in.
 # WARNING this has to be in the same order as above.
-AwayTeam = ['Fulham', 'Leeds', 'Man City', 'Leicester']
+AwayTeam = ['Brighton', 'Chelsea', 'Newcastle', 'West Brom','Tottenham', 'Crystal Palace',
+            'Everton', 'Burnley', 'Southampton', 'Man United']
    
 # This simulates matches between the HomeTeam and AwayTeam in the lists above 
 for i, j in zip(HomeTeam, AwayTeam):

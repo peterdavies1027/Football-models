@@ -140,10 +140,12 @@ spain_1820 = spain_1820.dropna(how='all')
 spain_params = solve_parameters_decay(spain_1820, xi = 0.00325)
 
 spain_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
-                                      'Away win', '1X', 'X2', '12', 'BTTS', 'No BTTS'])
+                                      'Away win', '1X', 'X2', '12', 'BTTS', 'No BTTS',
+                                      'Over 2.5 goals', 'Under 2.5 goals'])
 
-HomeTeam = ['Valladolid', 'Eibar', 'Granada']
-AwayTeam = ['Villarreal', 'Betis', 'Real Madrid']
+HomeTeam = ['Celta', 'Eibar', 'Elche', 'Huesca', 'Osasuna', 'Real Madrid', 'Valladolid']
+AwayTeam = ['Betis', 'Barcelona', 'Ath Bilbao', 'Valencia', 'Sociedad',
+            'Villarreal', 'Ath Madrid']
 
 for i, j in zip(HomeTeam, AwayTeam):
     matrix = dixon_coles_simulate_match(spain_params, i, j, max_goals=10)
@@ -172,12 +174,25 @@ for i, j in zip(HomeTeam, AwayTeam):
     not_btts_odds = round(100/not_btts, 2)
     btts_odds = round(100/btts, 2)   
     
+     # Add up the parts of the matrix where there are under 2.5 goals
+    U2_5G = (matrix_df.iloc[0, 0] + matrix_df.iloc[0, 1]
+             + matrix_df.iloc[0, 2] + matrix_df.iloc[1, 0]
+             + matrix_df.iloc[2, 0] + matrix_df.iloc[1, 1])
+    
+    # 100 - U2_5G to find O2_5G
+    O2_5G = 100 - U2_5G
+  
+    # Calculate the odds for under and over 2.5 goals, rounded to 2dp
+    U2_5G_odds = round(100/U2_5G, 2)
+    O2_5G_odds = round(100/O2_5G, 2) 
+    
     home_away = [i, j, home_odds, draw_odds, away_odds, ho_dr, 
-                 dr_aw, ha_win, btts_odds, not_btts_odds]
+                 dr_aw, ha_win, btts_odds, not_btts_odds, O2_5G_odds, U2_5G_odds]
     home_away_df = pd.DataFrame(home_away)
     home_away_trans = home_away_df.transpose()
     home_away_trans.columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
-                                      'Away win', '1X', 'X2', '12', 'BTTS', 'No BTTS']
+                                      'Away win', '1X', 'X2', '12', 'BTTS', 'No BTTS',
+                                      'Over 2.5 goals', 'Under 2.5 goals']
 
     spain_prediction = spain_prediction.append(home_away_trans)
 
