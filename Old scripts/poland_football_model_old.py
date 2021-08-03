@@ -1,9 +1,8 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri Jun 19 21:42:36 2020
+Created on Sun Apr 25 16:26:25 2021
 
-@author: ashlee
+@author: peter
 """
 
 import pandas as pd
@@ -76,65 +75,80 @@ def solve_parameters_decay(dataset, xi=0.001, debug = False, init_vals=None, opt
                         ["defence_"+team for team in teams] +
                         ['rho', 'home_adv'],
                         opt_output.x))
+
+
+""""def champ_match_day(HomeTeam, AwayTeam):
+    matrix = dixon_coles_simulate_match(champ_params, HomeTeam, AwayTeam, max_goals=5)
+    
+    matrix_df = pd.DataFrame(matrix)
+    matrix_df = matrix_df * 100
+    
+    home_win = np.sum(np.tril(matrix, -1))
+    draw = np.sum(np.diag(matrix))
+    away_win = np.sum(np.triu(matrix, 1))
+    
+    home_odds = 1/home_win
+    draw_odds = 1/draw
+    away_odds = 1/away_win
+    
+    ho_dr = 1/(home_win + draw)
+    dr_aw = 1/(draw + away_win)
+    ha_win = 1/(home_win + away_win)
+    
+    matrix_df.loc['Total', :] = matrix_df.sum(axis = 0)
+    matrix_df.loc[:, 'Total'] = matrix_df.sum(axis = 1)
+    
+    not_btts = (matrix_df.iloc[-1, 0] + matrix_df.iloc[0, -1] - matrix_df.iloc[0, 0])
+    btts = 100 - not_btts
+    
+    not_btts_odds = 100/not_btts
+    btts_odds = 100/btts    
+    
+    print(' ')
+    print(HomeTeam + str(' vs ') + AwayTeam)
+    print(' ')
+    print(round(matrix_df, 2))
+    print(' ')
+    print('Home %:' + str(round((home_win * 100), 2)))
+    print('Draw %:' + str(round((draw * 100), 2)))
+    print('Away %:' + str(round((away_win * 100), 2)))
+    print(' ')
+    print('Home odds:' + str(round(home_odds, 2)))
+    print('Draw odds:' + str(round(draw_odds, 2)))
+    print('Away odds:' + str(round(away_odds, 2)))
+    print(' ')
+    print('1X odds:' + str(round(ho_dr, 2)))
+    print('X2 odds:' + str(round(dr_aw, 2)))
+    print('12 odds:' + str(round(ha_win, 2)))
+    print(' ')
+    print('BTTS:' + str(round(btts_odds, 2)))
+    print('Not BTTS:' + str(round(not_btts_odds, 2)))
+    print(' ')
+    return matrix, home_win, draw, away_win, ho_dr, dr_aw, ha_win, home_odds, draw_odds, away_odds"""
     
 # This is the start of the code without functions
 
-# Create a blank DataFrame for all fixtures in the EPL  
-poland_all = pd.DataFrame()
-
-    
-    # Concatenate all of them together into 1 DataFrame
+poland_1220 = pd.DataFrame()
 poland_all = pd.read_csv("https://www.football-data.co.uk/new/POL.csv")
-
-# Ensure that the date is ina  sensible format, day/month/year
 poland_all['Date'] = pd.to_datetime(poland_all['Date'],  format='%d/%m/%Y')
-
-# Create a variable for time difference, this will be the number of days
-# from today. This variable is a factor that would be used to give more 
-# weight to the latest matches.
 poland_all['time_diff'] = (max(poland_all['Date']) - poland_all['Date']).dt.days
+poland_1220 = poland_all[['Date', 'Home','Away', 'HG','AG', 'Res', 'time_diff']]
+poland_1220 = poland_1220.rename(columns={'HG': 'HomeGoals', 'AG': 'AwayGoals'})
+poland_1220 = poland_1220.dropna(how='all')
+ 
 
-######
+poland_1220 = poland_1220[poland_1220['Date'] < '2021-07-01']
+    
+poland_params = solve_parameters_decay(poland_1220, xi = 0.00325)
 
-# We are only interested in the date, home team, away team, goals, results
-# and the time difference
-poland_1720 = poland_all[['Date', 'Home','Away', 'HG','AG', 'Res', 'time_diff']]
-
-# Rename some columns to sensible names
-poland_1720 = poland_1720.rename(columns={'HG': 'HomeGoals', 'AG': 'AwayGoals'})
-
-# Not interested in anything with na in this dataset
-poland_1720 = poland_1720.dropna(how='all')
-
-# CHECK WHETHER THIS RUNS EXCLUDING LATEST SEASON !!!!!CAN DELTE!!!!
-poland_1720 = poland_1720[poland_1720['Date'] < '2021-07-01']
-
-######
-
-# Creates variables for attack and defence for each team, giving more weight
-# to the most rececnt results. Can change the xi value however this seems 
-# the best value at the moment. Something to look in to at a later date
-poland_params = solve_parameters_decay(poland_1720, xi = 0.00325)
-
-# Create a DataFrame with all the values we are interested in
 poland_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
-                                      'Away win', '1X', 'X2', '12', 'BTTS', 'No BTTS',
-                                      'Over 2.5G', 'Under 2.5G', 'Home +1.5G', 'Home -1.5G', 'Away +1.5G',
-                                      'Away -1.5G', 'Home YC win', 'Draw YC', 
-                                      'Away YC win', 'Over 2.5YC', 'Under 2.5YC'])
-                                      #"""'Home corner win', 'Draw corner', 'Away corner win',
-                                      #'Over 9.5 corners', 'Under 9.5 corners'"""])
+                                      'Away win', '1X', 'X2', '12', 'BTTS', 'No BTTS'])
 
-# List of home teams in the fixtures we are interested in
-HomeTeam = ['Arsenal', 'Aston Villa', 'Fulham', 'Leeds', 'Leicester', 'Liverpool',
-            'Man City', 'Sheffield United', 'West Ham', 'Wolves']
+HomeTeam = ['Cracovia', 'Jagiellonia', 'Lech Poznan', 'Legia', 'Piast Gliwice',
+            'Pogon Szczecin', 'Slask Wroclaw', 'Wisla Plock']
+AwayTeam = ['Warta Poznan', 'Lechia Gdansk', 'Gornik Z.', 'Podbeskidzie',
+            'Wisla', 'Rakow', 'Stal Mielec', 'Zaglebie']
 
-# List of away teams in the fixtures we are intrested in.
-# WARNING this has to be in the same order as above.
-AwayTeam = ['Brighton', 'Chelsea', 'Newcastle', 'West Brom','Tottenham', 'Crystal Palace',
-            'Everton', 'Burnley', 'Southampton', 'Man United']
-   
-# This simulates matches between the HomeTeam and AwayTeam in the lists above 
 for i, j in zip(HomeTeam, AwayTeam):
     # Gives odds on all the scores up to 10 goals for each team, probably overkill
     # Creates a matrix with all of the results
@@ -221,8 +235,8 @@ for i, j in zip(HomeTeam, AwayTeam):
     home_plus_1_5_odds = round(1/home_plus_1_5, 2)
     home_minus_1_5_odds = round(1/home_minus_1_5, 2)
     away_plus_1_5_odds = round(1/away_plus_1_5, 2)
-    away_minus_1_5_odds = round(1/away_minus_1_5, 2)    
-    
+    away_minus_1_5_odds = round(1/away_minus_1_5, 2)
+
     # Create a list for each home team, away team and all the calculations above
     home_away = [i, j, home_odds, draw_odds, away_odds, ho_dr, 
                  dr_aw, ha_win, btts_odds, not_btts_odds, 
@@ -244,4 +258,7 @@ for i, j in zip(HomeTeam, AwayTeam):
    
     # Append the above onto the epl_prediction for the two teams ran above
     poland_prediction = poland_prediction.append(home_away_trans)
+
+
+
 

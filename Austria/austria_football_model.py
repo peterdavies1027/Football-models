@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+Created on Tue Aug  3 17:12:21 2021
+
+@author: ashlee
+"""
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
 Created on Fri Jun 19 21:42:36 2020
 
 @author: ashlee
@@ -76,48 +84,46 @@ def solve_parameters_decay(dataset, xi=0.001, debug = False, init_vals=None, opt
                         ["defence_"+team for team in teams] +
                         ['rho', 'home_adv'],
                         opt_output.x))
-    
+      
 # This is the start of the code without functions
 
 # Create a blank DataFrame for all fixtures in the EPL  
-poland_all = pd.DataFrame()
+austria_all = pd.DataFrame()
 
-    
-    # Concatenate all of them together into 1 DataFrame
-poland_all = pd.read_csv("https://www.football-data.co.uk/new/POL.csv")
-
+# Get the data from football-data for the seasons 2017-2021, this will need to 
+# be changed each year for the newest season
+austria_all = pd.read_csv("https://www.football-data.co.uk/new/AUT.csv")
 # Ensure that the date is ina  sensible format, day/month/year
-poland_all['Date'] = pd.to_datetime(poland_all['Date'],  format='%d/%m/%Y')
+austria_all['Date'] = pd.to_datetime(austria_all['Date'],  format='%d/%m/%Y')
 
 # Create a variable for time difference, this will be the number of days
 # from today. This variable is a factor that would be used to give more 
 # weight to the latest matches.
-poland_all['time_diff'] = (max(poland_all['Date']) - poland_all['Date']).dt.days
+austria_all['time_diff'] = (max(austria_all['Date']) - austria_all['Date']).dt.days
 
 ######
 
 # We are only interested in the date, home team, away team, goals, results
 # and the time difference
-poland_1720 = poland_all[['Date', 'Home','Away', 'HG','AG', 'Res', 'time_diff']]
+austria_1720 = austria_all[['Date', 'Home','Away', 'HG','AG', 'Res', 'time_diff']]
 
 # Rename some columns to sensible names
-poland_1720 = poland_1720.rename(columns={'HG': 'HomeGoals', 'AG': 'AwayGoals'})
+austria_1720 = austria_1720.rename(columns={'HG': 'HomeGoals', 'AG': 'AwayGoals'})
 
 # Not interested in anything with na in this dataset
-poland_1720 = poland_1720.dropna(how='all')
+austria_1720 = austria_1720.dropna(how='all')
 
-# CHECK WHETHER THIS RUNS EXCLUDING LATEST SEASON !!!!!CAN DELTE!!!!
-poland_1720 = poland_1720[poland_1720['Date'] < '2021-07-01']
 
 ######
 
 # Creates variables for attack and defence for each team, giving more weight
 # to the most rececnt results. Can change the xi value however this seems 
 # the best value at the moment. Something to look in to at a later date
-poland_params = solve_parameters_decay(poland_1720, xi = 0.00325)
+austria_params = solve_parameters_decay(austria_1720, xi = 0.00325)
+
 
 # Create a DataFrame with all the values we are interested in
-poland_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
+austria_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
                                       'Away win', '1X', 'X2', '12', 'BTTS', 'No BTTS',
                                       'Over 2.5G', 'Under 2.5G', 'Home +1.5G', 'Home -1.5G', 'Away +1.5G',
                                       'Away -1.5G', 'Home YC win', 'Draw YC', 
@@ -138,7 +144,7 @@ AwayTeam = ['Brighton', 'Chelsea', 'Newcastle', 'West Brom','Tottenham', 'Crysta
 for i, j in zip(HomeTeam, AwayTeam):
     # Gives odds on all the scores up to 10 goals for each team, probably overkill
     # Creates a matrix with all of the results
-    matrix = dixon_coles_simulate_match(poland_params, i, j, max_goals=5)
+    matrix = dixon_coles_simulate_match(austria_params, i, j, max_goals=5)
     
     # Change the matrix into a DataFrame
     matrix_df = pd.DataFrame(matrix)
@@ -221,8 +227,8 @@ for i, j in zip(HomeTeam, AwayTeam):
     home_plus_1_5_odds = round(1/home_plus_1_5, 2)
     home_minus_1_5_odds = round(1/home_minus_1_5, 2)
     away_plus_1_5_odds = round(1/away_plus_1_5, 2)
-    away_minus_1_5_odds = round(1/away_minus_1_5, 2)    
-    
+    away_minus_1_5_odds = round(1/away_minus_1_5, 2)
+
     # Create a list for each home team, away team and all the calculations above
     home_away = [i, j, home_odds, draw_odds, away_odds, ho_dr, 
                  dr_aw, ha_win, btts_odds, not_btts_odds, 
@@ -243,5 +249,5 @@ for i, j in zip(HomeTeam, AwayTeam):
                                       'Away -1.5G']
    
     # Append the above onto the epl_prediction for the two teams ran above
-    poland_prediction = poland_prediction.append(home_away_trans)
+    austria_prediction = austria_prediction.append(home_away_trans)
 

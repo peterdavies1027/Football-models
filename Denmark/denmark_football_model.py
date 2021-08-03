@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+Created on Tue Aug  3 17:12:21 2021
+
+@author: ashlee
+"""
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
 Created on Fri Jun 19 21:42:36 2020
 
 @author: ashlee
@@ -41,9 +49,9 @@ def dixon_coles_simulate_match(champ_params_dict, homeTeam, awayTeam, max_goals=
 
 def solve_parameters_decay(dataset, xi=0.001, debug = False, init_vals=None, options={'disp': True, 'maxiter':100},
                      constraints = [{'type':'eq', 'fun': lambda x: sum(x[:20])-20}] , **kwargs):
-    teams = np.sort(dataset['HomeTeam'].unique())
+    teams = np.sort(dataset['Home'].unique())
     # check for no weirdness in dataset
-    away_teams = np.sort(dataset['AwayTeam'].unique())
+    away_teams = np.sort(dataset['Away'].unique())
     if not np.array_equal(teams, away_teams):
         raise ValueError("something not right")
     n_teams = len(teams)
@@ -63,8 +71,8 @@ def solve_parameters_decay(dataset, xi=0.001, debug = False, init_vals=None, opt
         score_coefs = dict(zip(teams, champ_params[:n_teams]))
         defend_coefs = dict(zip(teams, champ_params[n_teams:(2*n_teams)]))
         rho, gamma = champ_params[-2:]
-        log_like = [dc_log_like_decay(row.HomeGoals, row.AwayGoals, score_coefs[row.HomeTeam], defend_coefs[row.HomeTeam],
-                                      score_coefs[row.AwayTeam], defend_coefs[row.AwayTeam], 
+        log_like = [dc_log_like_decay(row.HomeGoals, row.AwayGoals, score_coefs[row.Home], defend_coefs[row.Home],
+                                      score_coefs[row.Away], defend_coefs[row.Away], 
                                       rho, gamma, row.time_diff, xi=xi) for row in dataset.itertuples()]
         return -sum(log_like)
     opt_output = minimize(estimate_paramters, init_vals, options=options, constraints = constraints, **kwargs)
@@ -76,148 +84,46 @@ def solve_parameters_decay(dataset, xi=0.001, debug = False, init_vals=None, opt
                         ["defence_"+team for team in teams] +
                         ['rho', 'home_adv'],
                         opt_output.x))
-
-def solve_parameters_decay_YC(dataset, xi=0.001, debug = False, init_vals=None, options={'disp': True, 'maxiter':100},
-                     constraints = [{'type':'eq', 'fun': lambda x: sum(x[:20])-20}] , **kwargs):
-    teams = np.sort(dataset['HomeTeam'].unique())
-    # check for no weirdness in dataset
-    away_teams = np.sort(dataset['AwayTeam'].unique())
-    if not np.array_equal(teams, away_teams):
-        raise ValueError("something not right")
-    n_teams = len(teams)
-    if init_vals is None:
-        # random initialisation of model parameters
-        init_vals = np.concatenate((np.random.uniform(0,1,(n_teams)), # attack strength
-                                      np.random.uniform(0,-1,(n_teams)), # defence strength
-                                      np.array([0,1.0]) # rho (score correction), gamma (home advantage)
-                                     ))
-        
-    def dc_log_like_decay(x, y, alpha_x, beta_x, alpha_y, beta_y, rho, gamma, t, xi=xi):
-        lambda_x, mu_y = np.exp(alpha_x + beta_y + gamma), np.exp(alpha_y + beta_x) 
-        return  np.exp(-xi*t) * (np.log(rho_correction(x, y, lambda_x, mu_y, rho)) + 
-                                  np.log(poisson.pmf(x, lambda_x)) + np.log(poisson.pmf(y, mu_y)))
-
-    def estimate_paramters(params):
-        score_coefs = dict(zip(teams, params[:n_teams]))
-        defend_coefs = dict(zip(teams, params[n_teams:(2*n_teams)]))
-        rho, gamma = params[-2:]
-        log_like = [dc_log_like_decay(row.HomeYellowC, row.AwayYellowC, score_coefs[row.HomeTeam], defend_coefs[row.HomeTeam],
-                                      score_coefs[row.AwayTeam], defend_coefs[row.AwayTeam], 
-                                      rho, gamma, row.time_diff, xi=xi) for row in dataset.itertuples()]
-        return -sum(log_like)
-    opt_output = minimize(estimate_paramters, init_vals, options=options, constraints = constraints, **kwargs)
-    if debug:
-        # sort of hacky way to investigate the output of the optimisation process
-        return opt_output
-    else:
-        return dict(zip(["attack_"+team for team in teams] + 
-                        ["defence_"+team for team in teams] +
-                        ['rho', 'home_adv'],
-                        opt_output.x))
-  
-
-
-def champ_match_day(HomeTeam, AwayTeam):
-    matrix = dixon_coles_simulate_match(champ_params, HomeTeam, AwayTeam, max_goals=5)
-    
-    matrix_df = pd.DataFrame(matrix)
-    matrix_df = matrix_df * 100
-    
-    home_win = np.sum(np.tril(matrix, -1))
-    draw = np.sum(np.diag(matrix))
-    away_win = np.sum(np.triu(matrix, 1))
-    
-    home_odds = 1/home_win
-    draw_odds = 1/draw
-    away_odds = 1/away_win
-    
-    ho_dr = 1/(home_win + draw)
-    dr_aw = 1/(draw + away_win)
-    ha_win = 1/(home_win + away_win)
-    
-    matrix_df.loc['Total', :] = matrix_df.sum(axis = 0)
-    matrix_df.loc[:, 'Total'] = matrix_df.sum(axis = 1)
-    
-    not_btts = (matrix_df.iloc[-1, 0] + matrix_df.iloc[0, -1] - matrix_df.iloc[0, 0])
-    btts = 100 - not_btts
-    
-    not_btts_odds = 100/not_btts
-    btts_odds = 100/btts    
-    
-    print(' ')
-    print(HomeTeam + str(' vs ') + AwayTeam)
-    print(' ')
-    print(round(matrix_df, 2))
-    print(' ')
-    print('Home %:' + str(round((home_win * 100), 2)))
-    print('Draw %:' + str(round((draw * 100), 2)))
-    print('Away %:' + str(round((away_win * 100), 2)))
-    print(' ')
-    print('Home odds:' + str(round(home_odds, 2)))
-    print('Draw odds:' + str(round(draw_odds, 2)))
-    print('Away odds:' + str(round(away_odds, 2)))
-    print(' ')
-    print('1X odds:' + str(round(ho_dr, 2)))
-    print('X2 odds:' + str(round(dr_aw, 2)))
-    print('12 odds:' + str(round(ha_win, 2)))
-    print(' ')
-    print('BTTS:' + str(round(btts_odds, 2)))
-    print('Not BTTS:' + str(round(not_btts_odds, 2)))
-    print(' ')
-    return matrix, home_win, draw, away_win, ho_dr, dr_aw, ha_win, home_odds, draw_odds, away_odds
-    
+      
 # This is the start of the code without functions
 
 # Create a blank DataFrame for all fixtures in the EPL  
-poland_all = pd.DataFrame()
+denmark_all = pd.DataFrame()
 
-    
-    # Concatenate all of them together into 1 DataFrame
-poland_all = pd.read_csv("https://www.football-data.co.uk/new/POL.csv")
-
+# Get the data from football-data for the seasons 2017-2021, this will need to 
+# be changed each year for the newest season
+denmark_all = pd.read_csv("https://www.football-data.co.uk/new/DNK.csv")
 # Ensure that the date is ina  sensible format, day/month/year
-poland_all['Date'] = pd.to_datetime(poland_all['Date'],  format='%d/%m/%Y')
+denmark_all['Date'] = pd.to_datetime(denmark_all['Date'],  format='%d/%m/%Y')
 
 # Create a variable for time difference, this will be the number of days
 # from today. This variable is a factor that would be used to give more 
 # weight to the latest matches.
-poland_all['time_diff'] = (max(poland_all['Date']) - poland_all['Date']).dt.days
+denmark_all['time_diff'] = (max(denmark_all['Date']) - denmark_all['Date']).dt.days
 
 ######
 
 # We are only interested in the date, home team, away team, goals, results
 # and the time difference
-poland_1720 = poland_all[['Date', 'Home','Away', 'HG','AG', 'Res', 'time_diff']]
+denmark_1720 = denmark_all[['Date', 'Home','Away', 'HG','AG', 'Res', 'time_diff']]
 
 # Rename some columns to sensible names
-poland_1720 = poland_1720.rename(columns={'HG': 'HomeGoals', 'AG': 'AwayGoals'})
+denmark_1720 = denmark_1720.rename(columns={'HG': 'HomeGoals', 'AG': 'AwayGoals'})
 
 # Not interested in anything with na in this dataset
-poland_1720 = poland_1720.dropna(how='all')
+denmark_1720 = denmark_1720.dropna(how='all')
 
-######
-
-# Same dataset as above however we are interested in yellow cards rather than goals
-poland_YC_1720 = poland_all[['HomeTeam', 'AwayTeam', 'HY', 'AY', 'FTR', 'time_diff']]
-
-# Rename some columns so they are of more use
-poland_YC_1720 = poland_YC_1720.rename(columns={'HY': 'HomeYellowC', 'AY': 'AwayYellowC'})
-
-# Not interested in anything with na in this dataset
-poland_YC_1720 = poland_YC_1720.dropna(how='all')
 
 ######
 
 # Creates variables for attack and defence for each team, giving more weight
 # to the most rececnt results. Can change the xi value however this seems 
 # the best value at the moment. Something to look in to at a later date
-poland_params = solve_parameters_decay(poland_1720, xi = 0.00325)
+denmark_params = solve_parameters_decay(denmark_1720, xi = 0.00325)
 
-# Creates variables for ytellow cards for each team
-poland_params_YC = solve_parameters_decay_YC(poland_YC_1720, xi = 0.00325)
 
 # Create a DataFrame with all the values we are interested in
-poland_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
+denmark_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
                                       'Away win', '1X', 'X2', '12', 'BTTS', 'No BTTS',
                                       'Over 2.5G', 'Under 2.5G', 'Home +1.5G', 'Home -1.5G', 'Away +1.5G',
                                       'Away -1.5G', 'Home YC win', 'Draw YC', 
@@ -238,7 +144,7 @@ AwayTeam = ['Brighton', 'Chelsea', 'Newcastle', 'West Brom','Tottenham', 'Crysta
 for i, j in zip(HomeTeam, AwayTeam):
     # Gives odds on all the scores up to 10 goals for each team, probably overkill
     # Creates a matrix with all of the results
-    matrix = dixon_coles_simulate_match(poland_params, i, j, max_goals=5)
+    matrix = dixon_coles_simulate_match(denmark_params, i, j, max_goals=5)
     
     # Change the matrix into a DataFrame
     matrix_df = pd.DataFrame(matrix)
@@ -323,51 +229,11 @@ for i, j in zip(HomeTeam, AwayTeam):
     away_plus_1_5_odds = round(1/away_plus_1_5, 2)
     away_minus_1_5_odds = round(1/away_minus_1_5, 2)
 
-    # Same as above but for yellow cards
-    matrix_YC = dixon_coles_simulate_match(poland_params_YC, i, j, max_goals=10)
-    
-    # Turn the results into a DataFrame and multiply by 100
-    matrix_YC_df = pd.DataFrame(matrix_YC)
-    matrix_YC_df = matrix_YC_df * 100
-    
-    # Sum the triangle of the matrix where the home team has more yellow cards
-    home_win_YC = np.sum(np.tril(matrix_YC, -1))
-    
-    # Sum the diagonol where the home and away team have the same cards
-    draw_YC = np.sum(np.diag(matrix_YC))
-    
-    # Sum the triangle of the matrix where the away team has more yellow cards
-    away_win_YC = np.sum(np.triu(matrix_YC, 1))
-    
-    # Find the odds for all the above, rounded to 2dp.
-    home_YC_odds = round(1/home_win_YC, 2)
-    draw_YC_odds = round(1/draw_YC, 2)
-    away_YC_odds = round(1/away_win_YC, 2)
-    
-    # Sum all of the columns and rows to find the totals for each team
-    matrix_YC_df.loc['Total', :] = matrix_YC_df.sum(axis = 0)
-    matrix_YC_df.loc[:, 'Total'] = matrix_YC_df.sum(axis = 1)
-    
-    # Add up the parts where there are less than 2.5 cards
-    U2_5YC = (matrix_YC_df.iloc[0, 0] + matrix_YC_df.iloc[0, 1]
-             + matrix_YC_df.iloc[0, 2] + matrix_YC_df.iloc[1, 0]
-             + matrix_YC_df.iloc[2, 0] + matrix_YC_df.iloc[1, 1])
-    
-    # 100 - U2.5C to find over 2.5 cards
-    O2_5YC = 100 - U2_5YC
-    
-    # Calculate the odds for each, to 2 dp
-    U2_5YC_odds = round(100/U2_5YC, 2)
-    O2_5YC_odds = round(100/O2_5YC, 2)   
-    
-    
     # Create a list for each home team, away team and all the calculations above
     home_away = [i, j, home_odds, draw_odds, away_odds, ho_dr, 
                  dr_aw, ha_win, btts_odds, not_btts_odds, 
                  O2_5G_odds, U2_5G_odds, home_plus_1_5_odds, 
-                 home_minus_1_5_odds, away_plus_1_5_odds, 
-                 away_minus_1_5_odds, home_YC_odds, draw_YC_odds, 
-                 away_YC_odds, O2_5YC_odds, U2_5YC_odds]
+                 home_minus_1_5_odds, away_plus_1_5_odds]
     
     # Turn the above into a DataFrame
     home_away_df = pd.DataFrame(home_away)
@@ -380,9 +246,8 @@ for i, j in zip(HomeTeam, AwayTeam):
                                       'Away win', '1X', 'X2', '12', 'BTTS', 
                                       'No BTTS', 'Over 2.5G', 'Under 2.5G',
                                       'Home +1.5G', 'Home -1.5G', 'Away +1.5G',
-                                      'Away -1.5G', 'Home YC win', 'Draw YC', 
-                                      'Away YC win','Over 2.5YC', 'Under 2.5YC']
+                                      'Away -1.5G']
    
     # Append the above onto the epl_prediction for the two teams ran above
-    poland_prediction = poland_prediction.append(home_away_trans)
+    denmark_prediction = denmark_prediction.append(home_away_trans)
 
