@@ -199,6 +199,18 @@ epl_YC_1720 = epl_YC_1720.dropna(how='all')
 
 ######
 
+# Same dataset as above however we are interested in corners rather than goals
+epl_corners_1720 = epl_all[['HomeTeam', 'AwayTeam', 'HC', 'AC', 'FTR', 'time_diff']]
+
+# Rename some columns so they are of more use
+epl_corners_1720 = epl_corners_1720.rename(columns={'HC': 'HomeCorner', 'AC': 'AwayCorner'})
+
+# Not interested in anything with na in this dataset
+epl_corners_1720 = epl_corners_1720.dropna(how='all')
+
+######
+######
+
 # Creates variables for attack and defence for each team, giving more weight
 # to the most rececnt results. Can change the xi value however this seems 
 # the best value at the moment. Something to look in to at a later date
@@ -206,6 +218,12 @@ params = solve_parameters_decay(epl_1720, xi = 0.00325)
 
 # Creates variables for ytellow cards for each team
 params_YC = solve_parameters_decay_YC(epl_YC_1720, xi = 0.00325)
+
+#Creates variables for corners for each team
+#params_corners = solve_parameters_decay_corner(epl_corners_1720, xi = 0.00325)
+
+######
+######
 
 # Create a DataFrame with all the values we are interested in
 epl_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
@@ -229,7 +247,7 @@ AwayTeam = ['Brighton', 'Chelsea', 'Newcastle', 'West Brom','Tottenham', 'Crysta
 for i, j in zip(HomeTeam, AwayTeam):
     # Gives odds on all the scores up to 10 goals for each team, probably overkill
     # Creates a matrix with all of the results
-    matrix = dixon_coles_simulate_match(params, i, j, max_goals=5)
+    matrix = dixon_coles_simulate_match(params, i, j, max_goals=10)
     
     # Change the matrix into a DataFrame
     matrix_df = pd.DataFrame(matrix)
@@ -351,6 +369,60 @@ for i, j in zip(HomeTeam, AwayTeam):
     U2_5YC_odds = round(100/U2_5YC, 2)
     O2_5YC_odds = round(100/O2_5YC, 2)   
     
+    """
+    # This is missing the odds for 0 and 1 corners and it looks like the
+    # dixon cole method gives weird numbers for 
+    # Same as above but for corners
+    matrix_corner = dixon_coles_simulate_match(params_corners, i, j, max_goals=15)
+
+    # Turn the results into a DataFrame and multiply by 100
+    matrix_corner_df = pd.DataFrame(matrix_corner)
+    matrix_corner_df = matrix_corner_df * 100
+    #matrix_corner_df = matrix_corner_df.drop(matrix_corner_df.index[0])
+    #matrix_corner_df = matrix_corner_df.drop(matrix_corner_df.index[0])
+    #del matrix_corner_df[0]
+    #del matrix_corner_df[1]
+    
+    #even though this says that it is 0-13 corners it actually is 2-15 per side
+    matrix_corner_test_2 = matrix_corner_df.to_numpy()
+    
+    # Sum the triangle of the matrix where the home team has more yellow cards
+    home_win_corner = np.sum(np.tril(matrix_corner_test_2, -1))
+    
+    # Sum the diagonol where the home and away team have the same cards
+    draw_corner = np.sum(np.diag(matrix_corner_test_2))
+    
+    # Sum the triangle of the matrix where the away team has more yellow cards
+    away_win_corner = np.sum(np.triu(matrix_corner_test_2, 1))
+    
+    # Find the odds for all the above, rounded to 2dp.
+    home_corner_odds = round(1/home_win_corner, 2)
+    draw_corner_odds = round(1/draw_corner, 2)
+    away_corner_odds = round(1/away_win_corner, 2)
+    
+    # Multiply by df by 100 so the odds make sense
+    matrix_corner_df = matrix_corner_df * 100
+    
+    # Work out over and under 9.5 corners
+    under_9_5_corners = (matrix_corner_df.iloc[0, 0] + matrix_corner_df.iloc[0, 1]
+                         + matrix_corner_df.iloc[0, 2] + matrix_corner_df.iloc[0, 3]
+                         + matrix_corner_df.iloc[0, 4] + matrix_corner_df.iloc[0, 5]
+                         + matrix_corner_df.iloc[1, 0] + matrix_corner_df.iloc[1, 1]
+                         + matrix_corner_df.iloc[1, 2] + matrix_corner_df.iloc[1, 3]
+                         + matrix_corner_df.iloc[1, 4] + matrix_corner_df.iloc[2, 0]
+                         + matrix_corner_df.iloc[2, 1] + matrix_corner_df.iloc[2, 2]
+                         + matrix_corner_df.iloc[2, 3] + matrix_corner_df.iloc[3, 0]
+                         + matrix_corner_df.iloc[3, 1] + matrix_corner_df.iloc[3, 2]
+                         + matrix_corner_df.iloc[4, 0] + matrix_corner_df.iloc[4, 1]
+                         + matrix_corner_df.iloc[5, 0])
+    
+    over_9_5_corners = 100 - under_9_5_corners
+    
+    # Work out the odds
+    under_9_5_corner_odds = round(100/under_9_5_corners, 2)
+    over_9_5_corner_odds = round(100/over_9_5_corners, 2)
+    
+    """
     
     # Create a list for each home team, away team and all the calculations above
     home_away = [i, j, home_odds, draw_odds, away_odds, ho_dr, 
@@ -359,6 +431,8 @@ for i, j in zip(HomeTeam, AwayTeam):
                  home_minus_1_5_odds, away_plus_1_5_odds, 
                  away_minus_1_5_odds, home_YC_odds, draw_YC_odds, 
                  away_YC_odds, O2_5YC_odds, U2_5YC_odds]
+                 #"""home_corner_odds, draw_corner_odds, away_corner_odds,
+                 #over_9_5_corner_odds, under_9_5_corner_odds"""
     
     # Turn the above into a DataFrame
     home_away_df = pd.DataFrame(home_away)
@@ -373,7 +447,9 @@ for i, j in zip(HomeTeam, AwayTeam):
                                       'Home +1.5G', 'Home -1.5G', 'Away +1.5G',
                                       'Away -1.5G', 'Home YC win', 'Draw YC', 
                                       'Away YC win','Over 2.5YC', 'Under 2.5YC']
-   
+                                      #"""'Home corner win', 'Draw corner', 'Away corner win',
+                                      #'Over 9.5 corners', 'Under 9.5 corners'"""
+    
     # Append the above onto the epl_prediction for the two teams ran above
     epl_prediction = epl_prediction.append(home_away_trans)
 
