@@ -126,8 +126,7 @@ denmark_params = solve_parameters_decay(denmark_1720, xi = 0.00325)
 denmark_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
                                       'Away win', '1X', 'X2', '12', 'BTTS', 'No BTTS',
                                       'Over 2.5G', 'Under 2.5G', 'Home +1.5G', 'Home -1.5G', 'Away +1.5G',
-                                      'Away -1.5G', 'Home YC win', 'Draw YC', 
-                                      'Away YC win', 'Over 2.5YC', 'Under 2.5YC'])
+                                      'Away -1.5G'])
                                       #"""'Home corner win', 'Draw corner', 'Away corner win',
                                       #'Over 9.5 corners', 'Under 9.5 corners'"""])
 
@@ -144,7 +143,7 @@ AwayTeam = ['Brighton', 'Chelsea', 'Newcastle', 'West Brom','Tottenham', 'Crysta
 for i, j in zip(HomeTeam, AwayTeam):
     # Gives odds on all the scores up to 10 goals for each team, probably overkill
     # Creates a matrix with all of the results
-    matrix = dixon_coles_simulate_match(denmark_params, i, j, max_goals=5)
+    matrix = dixon_coles_simulate_match(denmark_params, i, j, max_goals=10)
     
     # Change the matrix into a DataFrame
     matrix_df = pd.DataFrame(matrix)

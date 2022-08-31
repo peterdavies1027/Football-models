@@ -126,8 +126,7 @@ austria_params = solve_parameters_decay(austria_1720, xi = 0.00325)
 austria_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
                                       'Away win', '1X', 'X2', '12', 'BTTS', 'No BTTS',
                                       'Over 2.5G', 'Under 2.5G', 'Home +1.5G', 'Home -1.5G', 'Away +1.5G',
-                                      'Away -1.5G', 'Home YC win', 'Draw YC', 
-                                      'Away YC win', 'Over 2.5YC', 'Under 2.5YC'])
+                                      'Away -1.5G'])
                                       #"""'Home corner win', 'Draw corner', 'Away corner win',
                                       #'Over 9.5 corners', 'Under 9.5 corners'"""])
 

@@ -173,10 +173,10 @@ turkey_all = pd.DataFrame()
 
 # Get the data from football-data for the seasons 2017-2021, this will need to 
 # be changed each year for the newest season
-for year in range(18,21):
+for year in range(19,23):
     
     # Concatenate all of them together into 1 DataFrame
-    turkey_all = pd.concat((turkey_all, pd.read_csv("http://www.football-data.co.uk/mmz4281/{}{}/T1.csv".format(year, year+1, sort=True))))
+    turkey_all = pd.concat((turkey_all, pd.read_csv("https://www.football-data.co.uk/mmz4281/{}{}/T1.csv".format(year, year+1, sort=True))))
 
 # Ensure that the date is ina  sensible format, day/month/year
 turkey_all['Date'] = pd.to_datetime(turkey_all['Date'],  format='%d/%m/%Y')
@@ -217,7 +217,7 @@ turkey_YC_1720 = turkey_YC_1720.dropna(how='all')
 turkey_params = solve_parameters_decay(turkey_1720, xi = 0.00325)
 
 # Creates variables for ytellow cards for each team
-turkey_params_YC = solve_parameters_decay_YC(turkey_YC_1720, xi = 0.00325)
+#turkey_params_YC = solve_parameters_decay_YC(turkey_YC_1720, xi = 0.00325)
 
 # Create a DataFrame with all the values we are interested in
 turkey_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Draw', 
