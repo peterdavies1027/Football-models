@@ -191,7 +191,7 @@ L2_all = pd.DataFrame()
 
 # Get the data from football-data for the seasons 2017-2021, this will need to 
 # be changed each year for the newest season
-for year in range(18,23):
+for year in range(22,24):
     
     # Concatenate all of them together into 1 DataFrame
     L2_all = pd.concat((L2_all, pd.read_csv("https://www.football-data.co.uk/mmz4281/{}{}/E3.csv".format(year, year+1, sort=True))))
@@ -246,13 +246,14 @@ L2_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'Dra
                                       #'Over 9.5 corners', 'Under 9.5 corners'"""])
 
 # List of home teams in the fixtures we are interested in
-HomeTeam = ['AFC Wimbledon', 'Bradford', 'Carlisle', 'Harrogate', 'Leyton Orient', 
-            'Northampton', 'Rochdale', 'Salford', 'Stockport', 'Sutton', 'Tranmere', 'Walsall']
+HomeTeam = ['Accrington', 'AFC Wimbledon', 'Barrow', 'Bradford', 'Colchester', 
+            'Forest Green', 'Grimsby', 'Mansfield', 'Morecambe', 'Notts County', 
+            'Sutton', 'Tranmere']
 
 # List of away teams in the fixtures we are intrested in.
 # WARNING this has to be in the same order as above.
-AwayTeam = ['Barrow', 'Crewe', 'Gillingham', 'Newport County', 'Hartlepool', 'Doncaster',
-            'Crawley Town', 'Stevenage', 'Swindon', 'Mansfield', 'Colchester', 'Grimsby']
+AwayTeam = ['Crewe', 'Salford', 'Swindon', 'Gillingham', 'Wrexham', 'Milton Keynes Dons', 
+            'Newport County', 'Crawley Town', 'Doncaster', 'Harrogate', 'Stockport', 'Walsall']
    
 # This simulates matches between the HomeTeam and AwayTeam in the lists above 
 for i, j in zip(HomeTeam, AwayTeam):
@@ -341,6 +342,8 @@ for i, j in zip(HomeTeam, AwayTeam):
     home_plus_1_5_odds = round(1/home_plus_1_5, 2)
     home_minus_1_5_odds = round(1/home_minus_1_5, 2)
     away_plus_1_5_odds = round(1/away_plus_1_5, 2)
+    
+    
     away_minus_1_5_odds = round(1/away_minus_1_5, 2)
 
     

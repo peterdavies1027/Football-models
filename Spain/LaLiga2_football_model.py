@@ -173,7 +173,7 @@ spain2_all = pd.DataFrame()
 
 # Get the data from football-data for the seasons 2017-2021, this will need to 
 # be changed each year for the newest season
-for year in range(19,23):
+for year in range(22,24):
     
     # Concatenate all of them together into 1 DataFrame
     spain2_all = pd.concat((spain2_all, pd.read_csv("https://www.football-data.co.uk/mmz4281/{}{}/SP2.csv".format(year, year+1, sort=True))))
@@ -227,11 +227,11 @@ spain2_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 
                                       #'Over 9.5 corners', 'Under 9.5 corners'"""])
 
 # List of home teams in the fixtures we are interested in
-HomeTeam = ['Villarreal', 'Osasuna', 'Betis', 'Real Madrid']
+HomeTeam = ['Huesca', 'Lugo', 'Andorra', 'Sp Gijon', 'Mirandes']
 
 # List of away teams in the fixtures we are intrested in.
 # WARNING this has to be in the same order as above.
-AwayTeam = ['Vallecano', 'Barcelona', 'Sociedad', 'Ath Madrid']
+AwayTeam = ['Alaves', 'Ponferradina', 'Malaga', 'Granada', 'Ibiza']
    
 # This simulates matches between the HomeTeam and AwayTeam in the lists above 
 for i, j in zip(HomeTeam, AwayTeam):

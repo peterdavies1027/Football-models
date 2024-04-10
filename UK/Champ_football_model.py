@@ -173,7 +173,7 @@ champ_all = pd.DataFrame()
 
 # Get the data from football-data for the seasons 2017-2021, this will need to 
 # be changed each year for the newest season
-for year in range(19,23):
+for year in range(22,24):
     
     # Concatenate all of them together into 1 DataFrame
     champ_all = pd.concat((champ_all, pd.read_csv("https://www.football-data.co.uk/mmz4281/{}{}/E1.csv".format(year, year+1, sort=True))))
@@ -228,13 +228,13 @@ champ_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', '
                                       #'Over 9.5 corners', 'Under 9.5 corners'"""])
 
 # List of home teams in the fixtures we are interested in
-HomeTeam = ['Luton', 'Sunderland', 'Blackburn', 'Blackpool', 'Cardiff', 'Huddersfield', 
-            'Hull', 'Middlesbrough', 'Millwall', 'Rotherham', 'Watford', 'Wigan']
+HomeTeam = ['Norwich', 'Blackburn', 'Cardiff', 'Coventry', 'Huddersfield', 
+            'Leicester', 'Middlesbrough', 'QPR', 'Stoke', 'Sunderland', 'Watford']
 
 # List of away teams in the fixtures we are intrested in.
 # WARNING this has to be in the same order as above.
-AwayTeam = ['Sheffield United', 'Norwich', 'Stoke', 'Bristol City', 'Preston', 'West Brom', 'Coventry',
-            'Swansea', 'Reading', 'Birmingham', 'QPR', 'Burnley']
+AwayTeam = ['Ipswich', 'Southampton', 'Hull', 'Leeds', 'Millwall', 'Birmingham',
+            'Swansea', 'Sheffield Weds', 'West Brom', 'Bristol City', 'Preston']
    
 # This simulates matches between the HomeTeam and AwayTeam in the lists above 
 for i, j in zip(HomeTeam, AwayTeam):

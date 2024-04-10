@@ -173,7 +173,7 @@ SC_champ_all = pd.DataFrame()
 
 # Get the data from football-data for the seasons 2017-2021, this will need to 
 # be changed each year for the newest season
-for year in range(19,23):
+for year in range(22,24):
     
     # Concatenate all of them together into 1 DataFrame
     SC_champ_all = pd.concat((SC_champ_all, pd.read_csv("https://www.football-data.co.uk/mmz4281/{}{}/SC1.csv".format(year, year+1, sort=True), encoding = 'unicode escape')))
@@ -228,19 +228,17 @@ SC_champ_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win'
                                       #'Over 9.5 corners', 'Under 9.5 corners'"""])
 
 # List of home teams in the fixtures we are interested in
-HomeTeam = ['Arsenal', 'Aston Villa', 'Fulham', 'Leeds', 'Leicester', 'Liverpool',
-            'Man City', 'Sheffield United', 'West Ham', 'Wolves']
+HomeTeam = ['Queens Park', 'Cove Rangers', 'Dundee', 'Partick', 'Raith Rvs']
 
 # List of away teams in the fixtures we are intrested in.
 # WARNING this has to be in the same order as above.
-AwayTeam = ['Brighton', 'Chelsea', 'Newcastle', 'West Brom','Tottenham', 'Crystal Palace',
-            'Everton', 'Burnley', 'Southampton', 'Man United']
+AwayTeam = ['Hamilton', 'Inverness C', 'Morton', 'Ayr', 'Arbroath']
    
 # This simulates matches between the HomeTeam and AwayTeam in the lists above 
 for i, j in zip(HomeTeam, AwayTeam):
     # Gives odds on all the scores up to 10 goals for each team, probably overkill
     # Creates a matrix with all of the results
-    matrix = dixon_coles_simulate_match(SC_champ_params, i, j, max_goals=5)
+    matrix = dixon_coles_simulate_match(SC_champ_params, i, j, max_goals=10)
     
     # Change the matrix into a DataFrame
     matrix_df = pd.DataFrame(matrix)

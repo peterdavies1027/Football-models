@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -173,7 +174,7 @@ italy_all = pd.DataFrame()
 
 # Get the data from football-data for the seasons 2017-2021, this will need to 
 # be changed each year for the newest season
-for year in range(19,23):
+for year in range(22,24):
     
     # Concatenate all of them together into 1 DataFrame
     italy_all = pd.concat((italy_all, pd.read_csv("https://www.football-data.co.uk/mmz4281/{}{}/I1.csv".format(year, year+1, sort=True))))
@@ -228,11 +229,11 @@ italy_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', '
                                       #'Over 9.5 corners', 'Under 9.5 corners'"""])
 
 # List of home teams in the fixtures we are interested in
-HomeTeam = ['Fiorentina', 'Atalanta', 'Bologna']
+HomeTeam = ['Inter', 'Cremonese', 'Napoli', 'Sassuolo', 'Fiorentina', 'Bologna']
 
 # List of away teams in the fixtures we are intrested in.
 # WARNING this has to be in the same order as above.
-AwayTeam = ['Udinese', 'Torino', 'Inter']
+AwayTeam = ['Lazio', 'Verona', 'Salernitana', 'Empoli', 'Sampdoria', 'Juventus']
    
 # This simulates matches between the HomeTeam and AwayTeam in the lists above 
 for i, j in zip(HomeTeam, AwayTeam):

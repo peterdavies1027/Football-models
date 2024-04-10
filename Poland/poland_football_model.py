@@ -125,13 +125,11 @@ poland_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 
                                       #'Over 9.5 corners', 'Under 9.5 corners'"""])
 
 # List of home teams in the fixtures we are interested in
-HomeTeam = ['Arsenal', 'Aston Villa', 'Fulham', 'Leeds', 'Leicester', 'Liverpool',
-            'Man City', 'Sheffield United', 'West Ham', 'Wolves']
+HomeTeam = ['Zaglebie', 'Piast Gliwice']
 
 # List of away teams in the fixtures we are intrested in.
 # WARNING this has to be in the same order as above.
-AwayTeam = ['Brighton', 'Chelsea', 'Newcastle', 'West Brom','Tottenham', 'Crystal Palace',
-            'Everton', 'Burnley', 'Southampton', 'Man United']
+AwayTeam = ['Warta Poznan', 'Gornik Z.']
    
 # This simulates matches between the HomeTeam and AwayTeam in the lists above 
 for i, j in zip(HomeTeam, AwayTeam):
@@ -226,7 +224,7 @@ for i, j in zip(HomeTeam, AwayTeam):
     home_away = [i, j, home_odds, draw_odds, away_odds, ho_dr, 
                  dr_aw, ha_win, btts_odds, not_btts_odds, 
                  O2_5G_odds, U2_5G_odds, home_plus_1_5_odds, 
-                 home_minus_1_5_odds, away_plus_1_5_odds]
+                 home_minus_1_5_odds, away_plus_1_5_odds, away_minus_1_5_odds]
     
     # Turn the above into a DataFrame
     home_away_df = pd.DataFrame(home_away)

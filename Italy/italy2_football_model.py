@@ -228,11 +228,11 @@ italy2_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 
                                       #'Over 9.5 corners', 'Under 9.5 corners'"""])
 
 # List of home teams in the fixtures we are interested in
-HomeTeam = ['Cittadella', 'Cremonese', 'Vicenza', 'Monza', 'Parma', 'Pisa', 'Pordenone', 'Spal', 'Ternana', 'Reggina']
+HomeTeam = ['Ascoli', 'Bari', 'Benevento', 'Cosenza', 'Genoa', 'Spal', 'Venezia', 'Cagliari']
 
 # List of away teams in the fixtures we are intrested in.
 # WARNING this has to be in the same order as above.
-AwayTeam = ['Brescia', 'Ascoli', 'Lecce', 'Benevento', 'Alessandria', 'Cosenza', 'Crotone', 'Frosinone', 'Perugia', 'Como']
+AwayTeam = ['Sudtirol', 'Como', 'Reggina', 'Cittadella', 'Perugia', 'Brescia', 'Palermo', 'Frosinone']
    
 # This simulates matches between the HomeTeam and AwayTeam in the lists above 
 for i, j in zip(HomeTeam, AwayTeam):

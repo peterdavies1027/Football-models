@@ -122,7 +122,7 @@ france2_all = pd.DataFrame()
 
 # Get the data from football-data for the seasons 2017-2021, this will need to 
 # be changed each year for the newest season
-for year in range(19,23):
+for year in range(20,24):
     
     # Concatenate all of them together into 1 DataFrame
     france2_all = pd.concat((france2_all, pd.read_csv("https://www.football-data.co.uk/mmz4281/{}{}/F2.csv".format(year, year+1, sort=True))))
@@ -177,11 +177,11 @@ france2_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win',
                                       #'Over 9.5 corners', 'Under 9.5 corners'"""])
 
 # List of home teams in the fixtures we are interested in
-HomeTeam = ['Auxerre', 'Ajaccio', 'Grenoble', 'Guingamp', 'Nancy', 'Niort', 'Paris FC', 'Quevilly Rouen', 'Sochaux']
+HomeTeam = ['Ajaccio', 'Amiens', 'Bordeaux', 'Caen', 'Concarneau', 'Dunkerque', 'Troyes', 'Valenciennes']
 
 # List of away teams in the fixtures we are intrested in.
 # WARNING this has to be in the same order as above.
-AwayTeam = ['Dunkerque', 'Le Havre', 'Amiens', 'Caen', 'Nimes', 'Dijon', 'Valenciennes', 'Pau FC', 'Bastia']
+AwayTeam = ['Annecy', 'Rodez', 'Quevilly Rouen', 'Paris FC', 'Guingamp', 'Pau FC', 'Bastia', 'Angers']
    
 # This simulates matches between the HomeTeam and AwayTeam in the lists above 
 for i, j in zip(HomeTeam, AwayTeam):

@@ -177,11 +177,11 @@ bund_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win', 'D
                                       #'Over 9.5 corners', 'Under 9.5 corners'"""])
 
 # List of home teams in the fixtures we are interested in
-HomeTeam = ['Freiburg', 'FC Koln']
+HomeTeam = ['FC Koln', 'Ein Frankfurt', 'RB Leipzig', 'Schalke 04', 'Union Berlin']
 
 # List of away teams in the fixtures we are intrested in.
 # WARNING this has to be in the same order as above.
-AwayTeam = ['Leverkusen', 'Stuttgart']
+AwayTeam = ['Leverkusen', 'Hoffenheim', 'Freiburg', 'Mainz', 'Augsburg']
    
 # This simulates matches between the HomeTeam and AwayTeam in the lists above 
 for i, j in zip(HomeTeam, AwayTeam):

@@ -226,11 +226,11 @@ portugal_prediction = pd.DataFrame(columns = ['HomeTeam', 'AwayTeam', 'Home win'
                                       #'Over 9.5 corners', 'Under 9.5 corners'"""])
 
 # List of home teams in the fixtures we are interested in
-HomeTeam = ['Maritimo', 'Boavista', 'Sp Lisbon']
+HomeTeam = ['Chaves', 'Maritimo', 'Rio Ave', 'Porto']
 
 # List of away teams in the fixtures we are intrested in.
 # WARNING this has to be in the same order as above.
-AwayTeam = ['Portimonense', 'Benfica', 'Chaves']
+AwayTeam = ['Sp Braga', 'Boavista', 'Benfica', 'Portimonense']
    
 # This simulates matches between the HomeTeam and AwayTeam in the lists above 
 for i, j in zip(HomeTeam, AwayTeam):
